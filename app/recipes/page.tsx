@@ -1,20 +1,50 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import RecipeCard from "@/components/features/RecipeCard";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
-import { getScans, type SavedScan } from "@/lib/store/savedScans";
+import { getScans } from "@/lib/api/getScans";
+import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import type { SavedScan } from "@/lib/store/savedScans";
 import { colors } from "@/lib/theme/colors";
 
 export default function RecipesPage() {
+  const router = useRouter();
   const [scans, setScans] = useState<SavedScan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setScans(getScans());
-    setIsLoading(false);
-  }, []);
+    let isActive = true;
+
+    async function loadRecipes() {
+      try {
+        const nextScans = await getScans();
+
+        if (isActive) {
+          setScans(nextScans);
+        }
+      } catch (loadError) {
+        if (
+          loadError instanceof Error &&
+          loadError.message === AUTH_REQUIRED_ERROR
+        ) {
+          router.push("/auth");
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadRecipes();
+
+    return () => {
+      isActive = false;
+    };
+  }, [router]);
 
   const recipeScans = useMemo(
     () => scans.filter((scan) => scan.input.trim().length > 0),

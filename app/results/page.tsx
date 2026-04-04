@@ -1,11 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import IngredientCard from "@/components/features/IngredientCard";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { checkIngredients } from "@/lib/api/check";
-import { saveScan } from "@/lib/store/savedScans";
+import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import { saveScan } from "@/lib/api/saveScan";
 import { colors } from "@/lib/theme/colors";
 import type { UIResult, UIStatus } from "@/lib/types/result";
 import {
@@ -31,6 +33,7 @@ const statusCopy: Record<UIStatus, { title: string; body: string }> = {
 };
 
 export default function ResultsPage() {
+  const router = useRouter();
   const [scanInput, setScanInput] = useState("");
   const [result, setResult] = useState<UIResult | null>(null);
   const [error, setError] = useState("");
@@ -137,13 +140,27 @@ export default function ResultsPage() {
     };
   }, [error, result]);
 
-  function handleSaveResult() {
+  async function handleSaveResult() {
     if (!result || !scanInput) {
       return;
     }
 
-    saveScan(scanInput, result);
-    setIsSaved(true);
+    try {
+      await saveScan(scanInput, result);
+      setIsSaved(true);
+    } catch (saveError) {
+      if (
+        saveError instanceof Error &&
+        saveError.message === AUTH_REQUIRED_ERROR
+      ) {
+        router.push("/auth");
+        return;
+      }
+
+      setError(
+        saveError instanceof Error ? saveError.message : "Failed to save scan"
+      );
+    }
   }
 
   const mainVariant = error ? "not_vegan" : result?.status ?? "maybe";

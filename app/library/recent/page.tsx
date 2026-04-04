@@ -1,24 +1,53 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import HistoryCard from "@/components/features/HistoryCard";
 import IngredientCard from "@/components/features/IngredientCard";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import NeoWindow from "@/components/ui/NeoWindow";
-import { getScans, type SavedScan } from "@/lib/store/savedScans";
+import { getScans } from "@/lib/api/getScans";
+import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import type { SavedScan } from "@/lib/store/savedScans";
 import { colors } from "@/lib/theme/colors";
 
 export default function LibraryRecentPage() {
+  const router = useRouter();
   const [records, setRecords] = useState<SavedScan[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const parsed = getScans();
-    setRecords(parsed);
-    setSelectedId(parsed[0]?.id || null);
-    setIsLoading(false);
-  }, []);
+    let isActive = true;
+
+    async function loadScans() {
+      try {
+        const parsed = await getScans();
+
+        if (isActive) {
+          setRecords(parsed);
+          setSelectedId(parsed[0]?.id || null);
+        }
+      } catch (loadError) {
+        if (
+          loadError instanceof Error &&
+          loadError.message === AUTH_REQUIRED_ERROR
+        ) {
+          router.push("/auth");
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadScans();
+
+    return () => {
+      isActive = false;
+    };
+  }, [router]);
 
   const visibleRecords = useMemo(
     () =>

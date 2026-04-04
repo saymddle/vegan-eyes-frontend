@@ -5,10 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
+import { getScanById } from "@/lib/api/getScans";
+import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import { deleteScan } from "@/lib/api/saveScan";
 import {
-  deleteScan,
   deriveRecipeTitle,
-  getScanById,
   type SavedScan
 } from "@/lib/store/savedScans";
 import { colors } from "@/lib/theme/colors";
@@ -27,17 +28,54 @@ export default function RecipeDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setRecipe(getScanById(params.id));
-    setIsLoading(false);
-  }, [params.id]);
+    let isActive = true;
+
+    async function loadRecipe() {
+      try {
+        const nextRecipe = await getScanById(params.id);
+
+        if (isActive) {
+          setRecipe(nextRecipe);
+        }
+      } catch (loadError) {
+        if (
+          loadError instanceof Error &&
+          loadError.message === AUTH_REQUIRED_ERROR
+        ) {
+          router.push("/auth");
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadRecipe();
+
+    return () => {
+      isActive = false;
+    };
+  }, [params.id, router]);
 
   const title = useMemo(
     () => (recipe ? deriveRecipeTitle(recipe.input) : "Recipe Detail"),
     [recipe]
   );
 
-  function handleDelete() {
-    deleteScan(params.id);
+  async function handleDelete() {
+    try {
+      await deleteScan(params.id);
+    } catch (deleteError) {
+      if (
+        deleteError instanceof Error &&
+        deleteError.message === AUTH_REQUIRED_ERROR
+      ) {
+        router.push("/auth");
+        return;
+      }
+    }
+
     router.push("/library/recipes");
   }
 

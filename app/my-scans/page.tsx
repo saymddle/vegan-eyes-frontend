@@ -1,14 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import HistoryCard from "@/components/features/HistoryCard";
 import IngredientCard from "@/components/features/IngredientCard";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
-import { getScans, type SavedScan } from "@/lib/store/savedScans";
+import { getScans } from "@/lib/api/getScans";
+import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import type { SavedScan } from "@/lib/store/savedScans";
 import { colors } from "@/lib/theme/colors";
 
 export default function MyScansPage() {
+  const router = useRouter();
   const [records, setRecords] = useState<SavedScan[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -16,16 +20,42 @@ export default function MyScansPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    try {
-      const parsed = getScans();
-      setRecords(parsed);
-      setSelectedId(parsed[0]?.id || null);
-    } catch {
-      setError("Unable to load saved scans.");
-    } finally {
-      setIsLoading(false);
+    let isActive = true;
+
+    async function loadScans() {
+      try {
+        const parsed = await getScans();
+
+        if (isActive) {
+          setRecords(parsed);
+          setSelectedId(parsed[0]?.id || null);
+          setError("");
+        }
+      } catch (loadError) {
+        if (
+          loadError instanceof Error &&
+          loadError.message === AUTH_REQUIRED_ERROR
+        ) {
+          router.push("/auth");
+          return;
+        }
+
+        if (isActive) {
+          setError("Unable to load saved scans.");
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
     }
-  }, []);
+
+    void loadScans();
+
+    return () => {
+      isActive = false;
+    };
+  }, [router]);
 
   const visibleRecords = useMemo(() => {
     const filtered = records.filter((record) => {
