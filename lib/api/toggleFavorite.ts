@@ -6,6 +6,10 @@ export async function toggleFavorite(
   id: string,
   nextFavorite: boolean
 ): Promise<DeeperItem> {
+  if (!supabase) {
+    throw new Error("Supabase client not initialized");
+  }
+
   const userId = await requireSupabaseUserId();
 
   const { data, error } = await supabase

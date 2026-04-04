@@ -3,6 +3,10 @@ import type { DeeperItem } from "@/lib/store/deeperStore";
 import { requireSupabaseUserId } from "./scansAuth";
 
 export async function getDeeper(): Promise<DeeperItem[]> {
+  if (!supabase) {
+    throw new Error("Supabase client not initialized");
+  }
+
   const userId = await requireSupabaseUserId();
 
   const { data, error } = await supabase

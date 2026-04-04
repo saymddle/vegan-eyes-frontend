@@ -14,6 +14,10 @@ export async function saveScan(
   input: string,
   result: UIResult
 ): Promise<SavedScan> {
+  if (!supabase) {
+    throw new Error("Supabase client not initialized");
+  }
+
   const userId = await requireSupabaseUserId();
 
   const { data, error } = await supabase
@@ -41,6 +45,10 @@ export async function saveScan(
 }
 
 export async function deleteScan(id: string) {
+  if (!supabase) {
+    throw new Error("Supabase client not initialized");
+  }
+
   const userId = await requireSupabaseUserId();
 
   const { error } = await supabase

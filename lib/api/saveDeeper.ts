@@ -8,6 +8,10 @@ import { requireSupabaseUserId } from "./scansAuth";
 export async function saveDeeper(
   item: CreateDeeperItemInput
 ): Promise<DeeperItem | null> {
+  if (!supabase) {
+    throw new Error("Supabase client not initialized");
+  }
+
   const userId = await requireSupabaseUserId();
   const ingredient = item.ingredient.trim();
 

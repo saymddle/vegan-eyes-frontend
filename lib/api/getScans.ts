@@ -20,6 +20,10 @@ function toSavedScan(row: ScanRow): SavedScan {
 }
 
 export async function getScans(): Promise<SavedScan[]> {
+  if (!supabase) {
+    throw new Error("Supabase client not initialized");
+  }
+
   const userId = await requireSupabaseUserId();
 
   const { data, error } = await supabase
@@ -36,6 +40,10 @@ export async function getScans(): Promise<SavedScan[]> {
 }
 
 export async function getScanById(id: string): Promise<SavedScan | null> {
+  if (!supabase) {
+    throw new Error("Supabase client not initialized");
+  }
+
   const userId = await requireSupabaseUserId();
 
   const { data, error } = await supabase
