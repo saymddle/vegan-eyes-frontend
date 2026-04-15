@@ -1,7 +1,7 @@
 import { colors } from "@/lib/theme/colors";
 
 type Props = {
-  title: string;
+  title?: string;
   children: React.ReactNode;
   variant?: "vegan" | "not_vegan" | "maybe";
   size?: "sm" | "md" | "lg";
@@ -41,7 +41,7 @@ export default function NeoWindow({
         color: textMap[variant]
       }}
     >
-      <div className="neo-head text-black">{title}</div>
+      {title ? <div className="neo-head text-black">{title}</div> : null}
       <div className="neo-content">{children}</div>
     </div>
   );

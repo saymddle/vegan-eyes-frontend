@@ -17,7 +17,6 @@ export default function BottomNav() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4">
       <NeoWindow
-        title="Navigate"
         variant="maybe"
         size="sm"
         className="mx-auto max-w-[500px]"
