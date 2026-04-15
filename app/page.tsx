@@ -7,6 +7,7 @@ import NeoButton from "@/components/ui/NeoButton";
 import NeoSwitch from "@/components/ui/NeoSwitch";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { colors } from "@/lib/theme/colors";
+import type { Ingredient } from "@/lib/utils/ocrIngredients";
 
 const INPUT_STORAGE_KEY = "vegan-eyes:last-scan";
 const messages = ["SCAN A RECIPE", "SCAN AN INGREDIENT"];
@@ -14,15 +15,15 @@ const messages = ["SCAN A RECIPE", "SCAN AN INGREDIENT"];
 export default function Home() {
   const router = useRouter();
   const webcamRef = useRef<Webcam | null>(null);
-  const [ingredients, setIngredients] = useState("");
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [typedIngredients, setTypedIngredients] = useState("");
   const [mode, setMode] = useState<"scan" | "type">("scan");
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [image, setImage] = useState<string | null>(null);
-  const [ocrResult, setOcrResult] = useState<string>("");
+  const [rawText, setRawText] = useState<string>("");
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -48,70 +49,49 @@ export default function Home() {
     const screenshot = webcamRef.current?.getScreenshot();
 
     if (!screenshot) {
-      setError("Camera image capture failed. Please try again.");
       return;
     }
 
     setImage(screenshot);
-    setError("");
   };
 
-  const handleAnalyze = async () => {
-    if (mode === "type") {
-      const trimmed = ingredients.trim();
-
-      if (!trimmed) {
-        setError("Paste or scan at least one ingredient.");
-        return;
-      }
-
-      setError("");
-      setIsLoading(true);
-      sessionStorage.setItem(INPUT_STORAGE_KEY, trimmed);
-      router.push("/results");
-      return;
-    }
-
-    if (!image) {
-      setError("Capture an image before analyzing.");
-      return;
-    }
+  async function handleScan(imageBase64: string) {
+    setLoading(true);
 
     try {
-      setError("");
-      setLoading(true);
-      setOcrResult("");
-
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ image })
+        body: JSON.stringify({ imageBase64 })
       });
 
       const data = (await res.json()) as {
-        success: boolean;
-        data?: unknown;
-        text?: string;
-        error?: string;
+        ingredients?: Ingredient[];
+        raw?: string;
       };
 
-      if (!res.ok || !data.success) {
-        throw new Error(data.error ?? "OCR processing failed");
-      }
-
-      const extractedText = data.text ?? "";
-      setOcrResult(extractedText);
-      setIngredients(extractedText);
-
-      console.log("OCR RESULT:", data);
-    } catch (scanError) {
-      console.error("OCR request failed", scanError);
-      setError(scanError instanceof Error ? scanError.message : "OCR processing failed");
+      setIngredients(data.ingredients ?? []);
+      setRawText(data.raw ?? "");
     } finally {
       setLoading(false);
     }
+  }
+
+  const handleAnalyze = async () => {
+    if (mode === "type") {
+      setIsLoading(true);
+      sessionStorage.setItem(INPUT_STORAGE_KEY, typedIngredients.trim());
+      router.push("/results");
+      return;
+    }
+
+    if (!image) {
+      return;
+    }
+
+    await handleScan(image);
   };
 
   return (
@@ -169,8 +149,8 @@ export default function Home() {
                 </div>
               ) : (
                 <textarea
-                  value={ingredients}
-                  onChange={(event) => setIngredients(event.target.value)}
+                  value={typedIngredients}
+                  onChange={(event) => setTypedIngredients(event.target.value)}
                   rows={9}
                   placeholder="Type ingredients: sugar, cocoa butter, soy lecithin..."
                   className="min-h-[220px] w-full resize-none bg-transparent text-base font-black uppercase leading-7 tracking-[0.04em] outline-none placeholder:text-[#474238]/40"
@@ -178,17 +158,25 @@ export default function Home() {
               )}
             </div>
 
-            {error ? (
-              <NeoWindow title="Input Error" variant="not_vegan" size="sm">
-                <p className="text-sm font-black uppercase tracking-[0.04em]">{error}</p>
+            {mode === "scan" && rawText ? (
+              <NeoWindow title="OCR Result" variant="maybe" size="sm">
+                <p className="whitespace-pre-wrap text-sm font-black uppercase tracking-[0.04em]">
+                  {rawText}
+                </p>
               </NeoWindow>
             ) : null}
 
-            {mode === "scan" && ocrResult ? (
-              <NeoWindow title="OCR Result" variant="maybe" size="sm">
-                <p className="text-sm font-black uppercase tracking-[0.04em] whitespace-pre-wrap">
-                  {ocrResult}
-                </p>
+            {mode === "scan" && ingredients.length > 0 ? (
+              <NeoWindow title="Parsed Ingredients" variant="vegan" size="sm">
+                <div className="flex flex-col gap-2">
+                  {ingredients.map((item, i) => (
+                    <div key={i} className={`ingredient ${item.confidence}`}>
+                      <span>{item.quantity ?? "—"}</span>
+                      <span>{item.unit ?? ""}</span>
+                      <span>{item.name}</span>
+                    </div>
+                  ))}
+                </div>
               </NeoWindow>
             ) : null}
 

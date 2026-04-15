@@ -1,86 +1,37 @@
-import { NextRequest, NextResponse } from "next/server";
+import { processOCRIngredients } from "@/lib/utils/ocrIngredients";
 
-type MistralOCRResponse = {
-  pages?: Array<{
-    markdown?: string;
-    text?: string;
-  }>;
-};
+export async function POST(req: Request) {
+  const { imageBase64 } = (await req.json()) as { imageBase64?: string };
 
-export async function POST(req: NextRequest) {
-  try {
-    const { image } = (await req.json()) as { image?: string };
+  const ocrResponse = await fetch("https://api.mistral.ai/v1/ocr", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "mistral-ocr-latest",
+      document: {
+        type: "image_base64",
+        imageBase64
+      }
+    })
+  });
 
-    if (!image) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Missing image payload"
-        },
-        { status: 400 }
-      );
-    }
+  const data = (await ocrResponse.json()) as {
+    pages?: Array<{ markdown?: string }>;
+  };
 
-    const apiKey = process.env.MISTRAL_API_KEY;
+  const text = data.pages?.map((p) => p.markdown ?? "").join("\n") || "";
 
-    if (!apiKey) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "MISTRAL_API_KEY is not configured"
-        },
-        { status: 500 }
-      );
-    }
+  const ingredients = processOCRIngredients(text);
 
-    const base64 = image.replace(/^data:image\/\w+;base64,/, "");
+  console.log("OCR RAW:", text);
+  console.log("PARSED:", ingredients);
 
-    const mistralRes = await fetch("https://api.mistral.ai/v1/ocr", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: "mistral-ocr-latest",
-        document: {
-          type: "image_base64",
-          image_base64: base64
-        }
-      })
-    });
-
-    const result = (await mistralRes.json()) as MistralOCRResponse & {
-      message?: string;
-    };
-
-    if (!mistralRes.ok) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: result.message ?? "OCR processing failed"
-        },
-        { status: mistralRes.status }
-      );
-    }
-
-    const text =
-      result.pages?.map((page) => page.markdown ?? page.text ?? "").join("\n\n") ?? "";
-
-    return NextResponse.json({
-      success: true,
-      data: result,
-      text
-    });
-  } catch (error) {
-    console.error("OCR processing failed", error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "OCR processing failed"
-      },
-      { status: 500 }
-    );
-  }
+  return Response.json({
+    success: true,
+    raw: text,
+    ingredients
+  });
 }
