@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Webcam from "react-webcam";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoSwitch from "@/components/ui/NeoSwitch";
 import NeoWindow from "@/components/ui/NeoWindow";
@@ -12,12 +13,16 @@ const messages = ["SCAN A RECIPE", "SCAN AN INGREDIENT"];
 
 export default function Home() {
   const router = useRouter();
+  const webcamRef = useRef<Webcam | null>(null);
   const [ingredients, setIngredients] = useState("");
   const [mode, setMode] = useState<"scan" | "type">("scan");
   const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
+  const [image, setImage] = useState<string | null>(null);
+  const [ocrResult, setOcrResult] = useState<string>("");
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -39,19 +44,75 @@ export default function Home() {
     };
   }, []);
 
-  function handleAnalyze() {
-    const trimmed = ingredients.trim();
+  const handleCapture = () => {
+    const screenshot = webcamRef.current?.getScreenshot();
 
-    if (!trimmed) {
-      setError("Paste or scan at least one ingredient.");
+    if (!screenshot) {
+      setError("Camera image capture failed. Please try again.");
       return;
     }
 
+    setImage(screenshot);
     setError("");
-    setIsLoading(true);
-    sessionStorage.setItem(INPUT_STORAGE_KEY, trimmed);
-    router.push("/results");
-  }
+  };
+
+  const handleAnalyze = async () => {
+    if (mode === "type") {
+      const trimmed = ingredients.trim();
+
+      if (!trimmed) {
+        setError("Paste or scan at least one ingredient.");
+        return;
+      }
+
+      setError("");
+      setIsLoading(true);
+      sessionStorage.setItem(INPUT_STORAGE_KEY, trimmed);
+      router.push("/results");
+      return;
+    }
+
+    if (!image) {
+      setError("Capture an image before analyzing.");
+      return;
+    }
+
+    try {
+      setError("");
+      setLoading(true);
+      setOcrResult("");
+
+      const res = await fetch("/api/scan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ image })
+      });
+
+      const data = (await res.json()) as {
+        success: boolean;
+        data?: unknown;
+        text?: string;
+        error?: string;
+      };
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error ?? "OCR processing failed");
+      }
+
+      const extractedText = data.text ?? "";
+      setOcrResult(extractedText);
+      setIngredients(extractedText);
+
+      console.log("OCR RESULT:", data);
+    } catch (scanError) {
+      console.error("OCR request failed", scanError);
+      setError(scanError instanceof Error ? scanError.message : "OCR processing failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="app-shell" style={{ backgroundColor: colors.primary }}>
@@ -80,13 +141,31 @@ export default function Home() {
             >
               {mode === "scan" ? (
                 <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 text-center">
-                  <div
-                    className="h-24 w-24 rounded-full border-[3px] border-[#000000] shadow-[6px_6px_0px_#000000]"
-                    style={{ backgroundColor: colors.primary }}
-                  />
-                  <p className="max-w-[280px] text-sm font-black uppercase leading-6 tracking-[0.08em]">
-                    Camera scanner placeholder. Switch to Type to enter label text.
-                  </p>
+                  {image ? (
+                    <img
+                      src={image}
+                      alt="Captured ingredient label"
+                      className="h-full max-h-[260px] w-full rounded border-[3px] border-[#000000] object-cover"
+                    />
+                  ) : (
+                    <Webcam
+                      ref={webcamRef}
+                      screenshotFormat="image/jpeg"
+                      audio={false}
+                      videoConstraints={{
+                        facingMode: "environment"
+                      }}
+                      className="h-full max-h-[260px] w-full rounded border-[3px] border-[#000000] object-cover"
+                    />
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={image ? () => setImage(null) : handleCapture}
+                    className="border-[3px] border-[#000000] bg-[#f8f5ee] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
+                  >
+                    {image ? "Retake" : "Capture"}
+                  </button>
                 </div>
               ) : (
                 <textarea
@@ -101,8 +180,14 @@ export default function Home() {
 
             {error ? (
               <NeoWindow title="Input Error" variant="not_vegan" size="sm">
-                <p className="text-sm font-black uppercase tracking-[0.04em]">
-                  {error}
+                <p className="text-sm font-black uppercase tracking-[0.04em]">{error}</p>
+              </NeoWindow>
+            ) : null}
+
+            {mode === "scan" && ocrResult ? (
+              <NeoWindow title="OCR Result" variant="maybe" size="sm">
+                <p className="text-sm font-black uppercase tracking-[0.04em] whitespace-pre-wrap">
+                  {ocrResult}
                 </p>
               </NeoWindow>
             ) : null}
@@ -117,11 +202,11 @@ export default function Home() {
 
             <NeoButton
               onClick={handleAnalyze}
-              disabled={isLoading}
+              disabled={isLoading || loading}
               tone="secondary"
               className="w-full"
             >
-              Analyze
+              {loading ? "Analyzing..." : "Analyze"}
             </NeoButton>
           </div>
         </NeoWindow>
