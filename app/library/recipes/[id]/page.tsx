@@ -1,41 +1,38 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import VeganRecipeView, {
+  recipeStatusCopy,
+  veganRecipeText
+} from "@/components/features/VeganRecipeView";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
-import { getScanById } from "@/lib/api/getScans";
-import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
-import { deleteScan } from "@/lib/api/saveScan";
 import {
-  deriveRecipeTitle,
-  type SavedScan
-} from "@/lib/store/savedScans";
+  deleteRecipe,
+  getRecipeById,
+  type SavedRecipe
+} from "@/lib/api/recipes";
+import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
 import { colors } from "@/lib/theme/colors";
-import { highlightIngredients } from "@/lib/utils/highlightIngredients";
-
-const statusLabel = {
-  vegan: "VEGAN",
-  not_vegan: "NOT VEGAN",
-  maybe: "MAYBE"
-};
 
 export default function RecipeDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [recipe, setRecipe] = useState<SavedScan | null>(null);
+  const [saved, setSaved] = useState<SavedRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let isActive = true;
 
     async function loadRecipe() {
       try {
-        const nextRecipe = await getScanById(params.id);
+        const nextRecipe = await getRecipeById(params.id);
 
         if (isActive) {
-          setRecipe(nextRecipe);
+          setSaved(nextRecipe);
         }
       } catch (loadError) {
         if (
@@ -58,14 +55,21 @@ export default function RecipeDetailPage() {
     };
   }, [params.id, router]);
 
-  const title = useMemo(
-    () => (recipe ? deriveRecipeTitle(recipe.input) : "Recipe Detail"),
-    [recipe]
-  );
+  async function handleCopy() {
+    if (!saved) return;
+
+    try {
+      await navigator.clipboard.writeText(veganRecipeText(saved.recipe));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard can be blocked; the text is still on screen to select.
+    }
+  }
 
   async function handleDelete() {
     try {
-      await deleteScan(params.id);
+      await deleteRecipe(params.id);
     } catch (deleteError) {
       if (
         deleteError instanceof Error &&
@@ -78,6 +82,9 @@ export default function RecipeDetailPage() {
 
     router.push("/library/recipes");
   }
+
+  const title = saved?.title ?? "Recipe Detail";
+  const summary = saved ? recipeStatusCopy[saved.recipe.status] : null;
 
   return (
     <main className="app-shell" style={{ backgroundColor: colors.base }}>
@@ -98,11 +105,11 @@ export default function RecipeDetailPage() {
           </NeoWindow>
         ) : null}
 
-        {!isLoading && !recipe ? (
+        {!isLoading && !saved ? (
           <NeoWindow title="Recipe not found" variant="maybe" size="md">
             <div className="flex flex-col gap-4">
               <p className="text-sm font-black uppercase tracking-[0.04em]">
-                This saved scan no longer exists.
+                This saved recipe no longer exists.
               </p>
               <NeoButton href="/library/recipes" tone="base">
                 Back to Recipes
@@ -111,71 +118,33 @@ export default function RecipeDetailPage() {
           </NeoWindow>
         ) : null}
 
-        {!isLoading && recipe ? (
+        {!isLoading && saved && summary ? (
           <>
-            <NeoWindow title={title} variant={recipe.result.status} size="lg">
+            <NeoWindow title={title} variant={summary.variant} size="lg">
               <div className="flex flex-col gap-4">
                 <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
-                  {statusLabel[recipe.result.status]}
+                  {summary.title}
                 </h1>
                 <p className="text-sm font-bold uppercase tracking-[0.08em]">
-                  {new Date(recipe.timestamp).toLocaleDateString()}
+                  Saved {new Date(saved.createdAt).toLocaleDateString()}
                 </p>
               </div>
             </NeoWindow>
 
-            <NeoWindow
-              title="Highlighted Ingredients"
-              variant={recipe.result.status}
-              size="md"
-            >
-              <div
-                className="border-[3px] border-[#000000] bg-[#DEE1E0] p-4 text-sm font-bold uppercase leading-7 tracking-[0.04em]"
-                dangerouslySetInnerHTML={{
-                  __html: highlightIngredients(
-                    recipe.input,
-                    recipe.result.ingredients
-                  )
-                }}
-              />
-            </NeoWindow>
+            <VeganRecipeView recipe={saved.recipe} />
 
-            {recipe.result.ingredients.length === 0 ? (
-              <NeoWindow title="Ingredients" variant="vegan" size="sm">
-                <p className="text-sm font-black uppercase tracking-[0.04em]">
-                  No flagged ingredients saved for this recipe.
-                </p>
-              </NeoWindow>
-            ) : (
-              recipe.result.ingredients.map((ingredient) => (
-                <NeoWindow
-                  key={ingredient.name}
-                  title={ingredient.name}
-                  variant={ingredient.status}
-                  size="sm"
-                >
-                  <div className="flex flex-col gap-3 text-sm font-bold uppercase leading-6 tracking-[0.04em]">
-                    <p>
-                      {ingredient.reason ||
-                        "No nutrition detail returned for this ingredient."}
-                    </p>
-                    <p className="font-black">
-                      Substitutes: {ingredient.swap || "No substitute listed"}
-                    </p>
-                    <p>
-                      Complexity:{" "}
-                      {ingredient.isComplex
-                        ? "Complex ingredient. Supplier origin may vary."
-                        : "Simple ingredient profile."}
-                    </p>
-                  </div>
-                </NeoWindow>
-              ))
-            )}
-
-            <NeoButton onClick={handleDelete} tone="danger" className="w-full">
-              Delete
-            </NeoButton>
+            <div className="flex flex-col gap-3">
+              <NeoButton
+                onClick={handleCopy}
+                tone={copied ? "secondary" : "primary"}
+                className="w-full"
+              >
+                {copied ? "Copied" : "Copy Vegan Recipe"}
+              </NeoButton>
+              <NeoButton onClick={handleDelete} tone="danger" className="w-full">
+                Delete
+              </NeoButton>
+            </div>
           </>
         ) : null}
       </div>

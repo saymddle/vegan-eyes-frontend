@@ -1,19 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import RecipeCard from "@/components/features/RecipeCard";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
-import { getScans } from "@/lib/api/getScans";
+import { getRecipes, type SavedRecipe } from "@/lib/api/recipes";
 import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
-import type { SavedScan } from "@/lib/store/savedScans";
 import { colors } from "@/lib/theme/colors";
 
 export default function LibraryRecipesPage() {
   const router = useRouter();
-  const [scans, setScans] = useState<SavedScan[]>([]);
+  const [recipes, setRecipes] = useState<SavedRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -21,10 +20,10 @@ export default function LibraryRecipesPage() {
 
     async function loadRecipes() {
       try {
-        const nextScans = await getScans();
+        const nextRecipes = await getRecipes();
 
         if (isActive) {
-          setScans(nextScans);
+          setRecipes(nextRecipes);
         }
       } catch (loadError) {
         if (
@@ -47,11 +46,6 @@ export default function LibraryRecipesPage() {
     };
   }, [router]);
 
-  const recipeScans = useMemo(
-    () => scans.filter((scan) => scan.input.trim().length > 0),
-    [scans]
-  );
-
   return (
     <main className="app-shell" style={{ backgroundColor: colors.base }}>
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
@@ -68,7 +62,7 @@ export default function LibraryRecipesPage() {
               Saved recipes.
             </h1>
             <p className="text-sm font-bold uppercase leading-6 tracking-[0.04em]">
-              Recipe-style scans collected from your saved ingredient checks.
+              Vegan versions of the recipes you have scanned and saved.
             </p>
           </div>
         </NeoWindow>
@@ -81,11 +75,11 @@ export default function LibraryRecipesPage() {
           </NeoWindow>
         ) : null}
 
-        {!isLoading && recipeScans.length === 0 ? (
-          <NeoWindow title="No saved scans yet" variant="maybe" size="sm">
+        {!isLoading && recipes.length === 0 ? (
+          <NeoWindow title="No saved recipes yet" variant="maybe" size="sm">
             <div className="flex flex-col gap-4">
               <p className="text-sm font-black uppercase tracking-[0.04em]">
-                Save a scan result to build your recipe library.
+                Scan a recipe, then tap Save Recipe to keep its vegan version here.
               </p>
               <NeoButton href="/" tone="base">
                 Run a Scan
@@ -95,7 +89,9 @@ export default function LibraryRecipesPage() {
         ) : null}
 
         {!isLoading
-          ? recipeScans.map((scan) => <RecipeCard key={scan.id} scan={scan} />)
+          ? recipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))
           : null}
       </div>
     </main>

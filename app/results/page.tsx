@@ -275,7 +275,7 @@ export default function ResultsPage() {
             tone={isSaved ? "secondary" : "primary"}
             className="w-full"
           >
-            {isSaved ? "Saved" : "Save Recipe"}
+            {isSaved ? "Saved" : "Save Scan"}
           </NeoButton>
         </div>
       </div>

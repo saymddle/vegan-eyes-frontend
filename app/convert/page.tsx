@@ -1,37 +1,32 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import VeganRecipeView, {
+  recipeStatusCopy,
+  veganRecipeText,
+  veganRecipeTitle
+} from "@/components/features/VeganRecipeView";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
+import { saveRecipe } from "@/lib/api/recipes";
+import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
 import type { VeganizedRecipe } from "@/lib/ingredients/veganize";
-import { RECIPE_STORAGE_KEY } from "@/lib/store/recipeInput";
+import {
+  RECIPE_STORAGE_KEY,
+  readRecipeSource
+} from "@/lib/store/recipeInput";
 import { colors } from "@/lib/theme/colors";
 
-const statusCopy = {
-  vegan: {
-    variant: "vegan",
-    title: "Already vegan",
-    body: "Nothing in this recipe needs swapping."
-  },
-  non_vegan: {
-    variant: "vegan",
-    title: "Vegan version",
-    body: "The swapped ingredients are highlighted below."
-  },
-  unclear: {
-    variant: "maybe",
-    title: "Nearly vegan",
-    body: "A few ingredients need a quick label check."
-  }
-} as const;
-
 export default function ConvertPage() {
+  const router = useRouter();
   const [source, setSource] = useState("");
   const [recipe, setRecipe] = useState<VeganizedRecipe | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [showOriginal, setShowOriginal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -82,13 +77,8 @@ export default function ConvertPage() {
   async function handleCopy() {
     if (!recipe) return;
 
-    const text = recipe.lines
-      .map((line) => (line.kind === "heading" ? `\n${line.vegan}` : line.vegan))
-      .join("\n")
-      .trim();
-
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(veganRecipeText(recipe));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -96,15 +86,39 @@ export default function ConvertPage() {
     }
   }
 
-  const summary = recipe ? statusCopy[recipe.status] : null;
-  const replaced = recipe?.swaps.filter((swap) => swap.replacement) ?? [];
-  const toCheck = recipe?.swaps.filter((swap) => !swap.replacement) ?? [];
+  async function handleSave() {
+    if (!recipe || savedId) return;
+    setIsSaving(true);
+
+    try {
+      const saved = await saveRecipe(
+        veganRecipeTitle(recipe),
+        readRecipeSource(),
+        source,
+        recipe
+      );
+      setSavedId(saved.id);
+    } catch (saveError) {
+      if (
+        saveError instanceof Error &&
+        saveError.message === AUTH_REQUIRED_ERROR
+      ) {
+        router.push("/auth");
+        return;
+      }
+      setError("Could not save this recipe. Try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  const summary = recipe ? recipeStatusCopy[recipe.status] : null;
 
   return (
     <main className="app-shell" style={{ backgroundColor: colors.base }}>
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <NeoWindow
-          title={recipe?.title || "Recipe"}
+          title={recipe ? veganRecipeTitle(recipe) : "Recipe"}
           variant={error ? "not_vegan" : summary?.variant ?? "maybe"}
           size="lg"
         >
@@ -128,119 +142,31 @@ export default function ConvertPage() {
           </NeoWindow>
         ) : null}
 
-        {recipe ? (
-          <NeoWindow
-            title={showOriginal ? "Original" : "Vegan Recipe"}
-            variant="vegan"
-            size="md"
-          >
-            <div className="flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-2">
-                <NeoButton
-                  onClick={() => setShowOriginal(false)}
-                  tone={showOriginal ? "base" : "secondary"}
-                  className="text-xs"
-                >
-                  Vegan
-                </NeoButton>
-                <NeoButton
-                  onClick={() => setShowOriginal(true)}
-                  tone={showOriginal ? "secondary" : "base"}
-                  className="text-xs"
-                >
-                  Original
-                </NeoButton>
-              </div>
-
-              <div
-                className="flex flex-col gap-2 border-[3px] border-[#000000] p-4 text-sm font-bold leading-6"
-                style={{ backgroundColor: colors.white, color: colors.black }}
-              >
-                {recipe.lines.map((line, i) =>
-                  line.kind === "heading" ? (
-                    <h2
-                      key={i}
-                      className="mt-2 text-base font-black uppercase tracking-[0.06em] first:mt-0"
-                    >
-                      {line.original}
-                    </h2>
-                  ) : (
-                    <p key={i} className={line.kind === "step" ? "mt-1" : ""}>
-                      {showOriginal
-                        ? line.original
-                        : line.parts.map((part, j) =>
-                            part.swap === undefined ? (
-                              <span key={j}>{part.text}</span>
-                            ) : (
-                              <mark
-                                key={j}
-                                className="px-1 font-black"
-                                style={{
-                                  backgroundColor: colors.secondary,
-                                  color: colors.black
-                                }}
-                              >
-                                {part.text}
-                              </mark>
-                            )
-                          )}
-                    </p>
-                  )
-                )}
-              </div>
-            </div>
-          </NeoWindow>
-        ) : null}
-
-        {replaced.length > 0 ? (
-          <NeoWindow title="Swaps" variant="maybe" size="md">
-            <ul className="flex flex-col gap-3">
-              {replaced.map((swap) => (
-                <li
-                  key={swap.ingredient}
-                  className="border-[3px] border-[#000000] p-3 text-sm font-bold"
-                  style={{ backgroundColor: colors.white, color: colors.black }}
-                >
-                  <p className="font-black uppercase tracking-[0.04em]">
-                    {swap.ingredient} → {swap.replacement}
-                  </p>
-                  {swap.alternative ? (
-                    <p className="mt-1 text-xs uppercase tracking-[0.04em]">
-                      Or try: {swap.alternative}
-                    </p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </NeoWindow>
-        ) : null}
-
-        {toCheck.length > 0 ? (
-          <NeoWindow title="Check the label" variant="maybe" size="md">
-            <ul className="flex flex-col gap-3">
-              {toCheck.map((swap) => (
-                <li
-                  key={swap.ingredient}
-                  className="border-[3px] border-[#000000] p-3 text-sm font-bold"
-                  style={{ backgroundColor: colors.white, color: colors.black }}
-                >
-                  <p className="font-black uppercase tracking-[0.04em]">
-                    {swap.ingredient}
-                  </p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.04em]">
-                    {swap.note}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </NeoWindow>
-        ) : null}
+        {recipe ? <VeganRecipeView recipe={recipe} /> : null}
 
         <div className="flex flex-col gap-3">
+          {savedId ? (
+            <NeoButton
+              href={`/library/recipes/${savedId}`}
+              tone="secondary"
+              className="w-full"
+            >
+              Saved. Open in Library
+            </NeoButton>
+          ) : (
+            <NeoButton
+              onClick={handleSave}
+              disabled={!recipe || isSaving}
+              tone="primary"
+              className="w-full"
+            >
+              {isSaving ? "Saving..." : "Save Recipe"}
+            </NeoButton>
+          )}
           <NeoButton
             onClick={handleCopy}
             disabled={!recipe}
-            tone={copied ? "secondary" : "primary"}
+            tone={copied ? "secondary" : "base"}
             className="w-full"
           >
             {copied ? "Copied" : "Copy Vegan Recipe"}

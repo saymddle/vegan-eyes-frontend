@@ -82,7 +82,7 @@ export default function Home() {
         return;
       }
 
-      storeScanInput(data.raw);
+      storeScanInput(data.raw, "photo");
       router.push("/convert");
     } catch {
       setScanError("Scan failed. Check your connection and try again.");
@@ -94,7 +94,7 @@ export default function Home() {
   const handleAnalyze = async () => {
     if (mode === "type") {
       setIsLoading(true);
-      storeScanInput(typedIngredients.trim());
+      storeScanInput(typedIngredients.trim(), "paste");
       router.push("/convert");
       return;
     }
