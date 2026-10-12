@@ -1,0 +1,240 @@
+import {
+  matchLine,
+  normalize,
+  splitIngredients,
+  toStatus,
+  type IngredientIndex,
+  type IngredientRow,
+  type Status
+} from "./matcher";
+
+export type RecipeSwap = {
+  ingredient: string;
+  status: Exclude<Status, "vegan">;
+  // What goes into the recipe in its place. Missing when there is no swap on
+  // file, or the item only needs a label check ("sugar").
+  replacement?: string;
+  alternative?: string;
+  note?: string;
+};
+
+export type LinePart = { text: string; swap?: number };
+
+export type RecipeLine = {
+  kind: "heading" | "ingredient" | "step";
+  original: string;
+  vegan: string;
+  // The vegan line split so the swapped words can be highlighted.
+  parts: LinePart[];
+};
+
+export type VeganizedRecipe = {
+  title: string | null;
+  status: Status;
+  lines: RecipeLine[];
+  swaps: RecipeSwap[];
+};
+
+const HEADING =
+  /^(ingredients?|instructions?|directions?|method|steps?|preparation|notes?|for the [a-z ]+)\s*:?$/i;
+const STEP_HEADING = /^(instructions?|directions?|method|steps?|preparation)\s*:?$/i;
+const MAX_INGREDIENT_WORDS = 12;
+
+// OCR returns markdown, so drop list bullets, table pipes and heading marks
+// before deciding what a line is.
+function stripMarkdown(line: string) {
+  return line
+    .replace(/^\s*#+\s*/, "")
+    .replace(/^\s*[-*•]\s+/, "")
+    .replace(/\|/g, " ")
+    .replace(/\*\*|__/g, "")
+    .trim();
+}
+
+function cleanSwap(text: string | null | undefined) {
+  if (!text) return undefined;
+  const cleaned = text.replace(/\s*\([^)]*\)/g, "").replace(/\s+/g, " ").trim();
+  return cleaned || undefined;
+}
+
+// "Vegan butter" reads better mid-line as "vegan butter", but keeps its
+// capital at the start of a line.
+function matchCase(replacement: string, atStart: boolean) {
+  if (atStart) {
+    return replacement.charAt(0).toUpperCase() + replacement.slice(1);
+  }
+  if (/^[A-Z][a-z]/.test(replacement)) {
+    return replacement.charAt(0).toLowerCase() + replacement.slice(1);
+  }
+  return replacement;
+}
+
+function toSwap(row: IngredientRow): RecipeSwap {
+  const status = toStatus(row.vegan_status) as RecipeSwap["status"];
+  const primary = cleanSwap(row.swap_static) ?? cleanSwap(row.swap_functional);
+  const alternative = cleanSwap(row.swap_static)
+    ? cleanSwap(row.swap_functional)
+    : undefined;
+
+  if (status === "unclear" && !/\bvegan\b/i.test(primary ?? "")) {
+    // Sugar, wine and the like are usually fine; the swap is advice on what
+    // to buy, not a different ingredient.
+    return {
+      ingredient: row.name,
+      status,
+      note: primary
+        ? `Look for ${primary.charAt(0).toLowerCase()}${primary.slice(1)}.`
+        : "Make sure the label says it is vegan."
+    };
+  }
+
+  return {
+    ingredient: row.name,
+    status,
+    replacement: primary,
+    alternative,
+    note: primary ? undefined : "No swap on file yet."
+  };
+}
+
+function escapeRegex(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Cuts that only make sense with the meat: "2 chicken breasts" becomes
+// "2 seitan or soy chicken pieces", not "... pieces breasts".
+const CUTS =
+  "(?:[^a-zA-Z0-9]+(?:breasts?|thighs?|fillets?|filets?|wings?|drumsticks?|tenders|tenderloins?|cutlets?|steaks?|legs?|chops?|mince))?";
+
+function phrasePattern(words: string[]) {
+  return words.map(escapeRegex).join("[^a-zA-Z0-9]+") + CUTS;
+}
+
+type Phrase = { words: string[]; swap: number; skipAtStart?: boolean };
+
+// Replaces every matched phrase in one pass, so a replacement ("coconut
+// cream") is never matched again by a shorter phrase ("cream").
+function replacePhrases(
+  line: string,
+  phrases: Phrase[],
+  swaps: RecipeSwap[]
+): LinePart[] {
+  const usable = phrases
+    .filter(({ swap }) => swaps[swap].replacement)
+    .sort((a, b) => b.words.join(" ").length - a.words.join(" ").length);
+
+  if (usable.length === 0) return [{ text: line }];
+
+  // One capture group per phrase tells us which one matched.
+  const pattern = new RegExp(
+    `(?<![a-zA-Z0-9])(?:${usable.map(({ words }) => `(${phrasePattern(words)})`).join("|")})(?![a-zA-Z0-9])`,
+    "gi"
+  );
+  // Where the text starts, after any step number ("1. Cream the butter").
+  const firstWord = (line.match(/^(?:\d+[.)]\s+)?/) ?? [""])[0].length;
+
+  const parts: LinePart[] = [];
+  let last = 0;
+
+  for (const found of line.matchAll(pattern)) {
+    const start = found.index ?? 0;
+    const phrase = usable[found.slice(1).findIndex((group) => group)];
+    if (!phrase || (phrase.skipAtStart && start === firstWord)) continue;
+    if (start > last) parts.push({ text: line.slice(last, start) });
+    parts.push({
+      text: matchCase(swaps[phrase.swap].replacement as string, start === firstWord),
+      swap: phrase.swap
+    });
+    last = start + found[0].length;
+  }
+
+  if (last < line.length) parts.push({ text: line.slice(last) });
+  return parts;
+}
+
+function findFlagged(text: string, index: IngredientIndex) {
+  return splitIngredients(text).flatMap((segment) =>
+    matchLine(segment, index).filter(
+      ({ row }) => toStatus(row.vegan_status) !== "vegan"
+    )
+  );
+}
+
+export function veganizeRecipe(
+  text: string,
+  index: IngredientIndex
+): VeganizedRecipe {
+  const swaps: RecipeSwap[] = [];
+  const swapByRow = new Map<string, number>();
+  const lines: RecipeLine[] = [];
+  let title: string | null = null;
+  let inSteps = false;
+
+  const swapFor = (row: IngredientRow) => {
+    const key = normalize(row.name);
+    let at = swapByRow.get(key);
+    if (at === undefined) {
+      at = swaps.push(toSwap(row)) - 1;
+      swapByRow.set(key, at);
+    }
+    return at;
+  };
+
+  // "cream" in a step means the "heavy cream" from the ingredient list.
+  const stepSwap = (name: string) => {
+    const exact = swapByRow.get(name);
+    if (exact !== undefined) return exact;
+    for (const [swapped, at] of swapByRow) {
+      if (swapped.endsWith(` ${name}`)) return at;
+    }
+    return undefined;
+  };
+
+  text
+    .replace(/\r/g, "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => /[a-zA-Z0-9]/.test(line))
+    .forEach((raw) => {
+      const line = stripMarkdown(raw);
+      const isMarkdownHeading = /^\s*#/.test(raw);
+
+      if (isMarkdownHeading || HEADING.test(line)) {
+        if (STEP_HEADING.test(line)) inSteps = true;
+        else if (/^ingredients?\s*:?$/i.test(line)) inSteps = false;
+        if (!title && isMarkdownHeading && !HEADING.test(line)) title = line;
+        lines.push({ kind: "heading", original: line, vegan: line, parts: [{ text: line }] });
+        return;
+      }
+
+      const wordCount = line.split(/\s+/).length;
+      const kind =
+        inSteps || wordCount > MAX_INGREDIENT_WORDS ? "step" : "ingredient";
+
+      const matches = findFlagged(line, index).flatMap(({ row, words }): Phrase[] => {
+        if (kind === "ingredient") return [{ words, swap: swapFor(row) }];
+        // In method steps, only swap what the ingredient list already swapped,
+        // so "cream the sugar" is left alone when there is no cream in it.
+        // A step's first word is usually a verb ("Cream", "Butter"), so it is
+        // never swapped.
+        const swap = stepSwap(normalize(row.name));
+        return swap === undefined ? [] : [{ words, swap, skipAtStart: true }];
+      });
+
+      const parts = replacePhrases(line, matches, swaps);
+      lines.push({
+        kind,
+        original: line,
+        vegan: parts.map((part) => part.text).join(""),
+        parts
+      });
+    });
+
+  const status: Status = swaps.some((swap) => swap.status === "non_vegan")
+    ? "non_vegan"
+    : swaps.length
+      ? "unclear"
+      : "vegan";
+
+  return { title, status, lines, swaps };
+}

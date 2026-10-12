@@ -15,7 +15,7 @@ export type SynonymRow = {
   ingredient_name: string;
 };
 
-type Status = "vegan" | "non_vegan" | "unclear";
+export type Status = "vegan" | "non_vegan" | "unclear";
 
 const severity: Record<Status, number> = {
   vegan: 0,
@@ -40,7 +40,7 @@ export function normalize(text: string) {
     .trim();
 }
 
-function toStatus(value: string | null): Status {
+export function toStatus(value: string | null): Status {
   return value === "non_vegan" || value === "unclear" ? value : "vegan";
 }
 
@@ -128,26 +128,33 @@ function lookup(map: Map<string, IngredientRow>, words: string[]) {
     : map.get([...words.slice(0, -1), single].join(" "));
 }
 
+export type LineMatch = {
+  row: IngredientRow;
+  // The normalized words of the line that matched, e.g. ["heavy", "cream"].
+  words: string[];
+};
+
 // Finds the database rows mentioned in one ingredient line, longest phrase
 // first, so "soy lecithin" wins over "lecithin".
-function matchLine(line: string, index: IngredientIndex): IngredientRow[] {
+export function matchLine(line: string, index: IngredientIndex): LineMatch[] {
   const words = line.split(" ");
   const named = words.filter(
     (word) => !/^\d+$/.test(word) && !QUANTITY_WORDS.has(word)
   );
 
   const whole = named.length ? lookup(index.exact, named) : undefined;
-  if (whole) return [whole];
+  if (whole) return [{ row: whole, words: named }];
 
   const used = new Array<boolean>(words.length).fill(false);
-  const found: IngredientRow[] = [];
+  const found: LineMatch[] = [];
 
   for (let size = Math.min(index.maxWords, words.length); size > 0; size--) {
     for (let start = 0; start + size <= words.length; start++) {
       if (used.slice(start, start + size).some(Boolean)) continue;
-      const row = lookup(index.terms, words.slice(start, start + size));
+      const phrase = words.slice(start, start + size);
+      const row = lookup(index.terms, phrase);
       if (!row) continue;
-      found.push(row);
+      found.push({ row, words: phrase });
       used.fill(true, start, start + size);
     }
   }
@@ -162,7 +169,7 @@ export function checkIngredients(
   const flagged = new Map<string, BackendIngredient>();
 
   splitIngredients(input).forEach((line) => {
-    matchLine(line, index).forEach((row) => {
+    matchLine(line, index).forEach(({ row }) => {
       const status = toStatus(row.vegan_status);
       const key = normalize(row.name);
       if (status === "vegan" || flagged.has(key)) return;

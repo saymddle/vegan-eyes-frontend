@@ -15,7 +15,7 @@ import {
   highlightIngredients
 } from "@/lib/utils/highlightIngredients";
 
-const INPUT_STORAGE_KEY = "vegan-eyes:last-scan";
+import { INPUT_STORAGE_KEY } from "@/lib/store/recipeInput";
 
 const statusCopy: Record<UIStatus, { title: string; body: string }> = {
   vegan: {
