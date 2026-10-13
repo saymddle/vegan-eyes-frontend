@@ -6,7 +6,7 @@ import IngredientCard from "@/components/features/IngredientCard";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { checkIngredients } from "@/lib/api/check";
-import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import { saveScan } from "@/lib/api/saveScan";
 import { colors } from "@/lib/theme/colors";
 import type { UIResult, UIStatus } from "@/lib/types/result";
@@ -153,7 +153,7 @@ export default function ResultsPage() {
         saveError instanceof Error &&
         saveError.message === AUTH_REQUIRED_ERROR
       ) {
-        router.push("/auth");
+        router.push(authPath());
         return;
       }
 

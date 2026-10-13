@@ -14,7 +14,7 @@ import {
   getRecipeById,
   type SavedRecipe
 } from "@/lib/api/recipes";
-import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import { colors } from "@/lib/theme/colors";
 
 export default function RecipeDetailPage() {
@@ -39,7 +39,7 @@ export default function RecipeDetailPage() {
           loadError instanceof Error &&
           loadError.message === AUTH_REQUIRED_ERROR
         ) {
-          router.push("/auth");
+          router.push(authPath());
         }
       } finally {
         if (isActive) {
@@ -75,7 +75,7 @@ export default function RecipeDetailPage() {
         deleteError instanceof Error &&
         deleteError.message === AUTH_REQUIRED_ERROR
       ) {
-        router.push("/auth");
+        router.push(authPath());
         return;
       }
     }

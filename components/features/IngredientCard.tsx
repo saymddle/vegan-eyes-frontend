@@ -6,7 +6,7 @@ import type { UIIngredient } from "@/lib/types/result";
 import Expandable from "@/components/ui/Expandable";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
-import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import { saveDeeper } from "@/lib/api/saveDeeper";
 import { getIngredientAnchorId } from "@/lib/utils/highlightIngredients";
 
@@ -50,7 +50,7 @@ export default function IngredientCard({
         error instanceof Error &&
         error.message === AUTH_REQUIRED_ERROR
       ) {
-        router.push("/auth");
+        router.push(authPath());
         return;
       }
 

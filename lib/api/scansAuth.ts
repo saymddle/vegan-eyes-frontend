@@ -18,3 +18,10 @@ export async function requireSupabaseUserId() {
 
   return user.id;
 }
+
+// The sign-in page, set to come back to the current screen afterwards.
+export function authPath() {
+  if (typeof window === "undefined") return "/auth";
+  const here = window.location.pathname + window.location.search;
+  return `/auth?next=${encodeURIComponent(here)}`;
+}

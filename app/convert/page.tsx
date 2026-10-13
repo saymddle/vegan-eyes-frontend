@@ -10,7 +10,7 @@ import VeganRecipeView, {
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { saveRecipe } from "@/lib/api/recipes";
-import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import type { VeganizedRecipe } from "@/lib/ingredients/veganize";
 import {
   RECIPE_STORAGE_KEY,
@@ -103,7 +103,7 @@ export default function ConvertPage() {
         saveError instanceof Error &&
         saveError.message === AUTH_REQUIRED_ERROR
       ) {
-        router.push("/auth");
+        router.push(authPath());
         return;
       }
       setError("Could not save this recipe. Try again.");

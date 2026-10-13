@@ -6,7 +6,7 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { getDeeper } from "@/lib/api/getDeeper";
-import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import { toggleFavorite } from "@/lib/api/toggleFavorite";
 import type { DeeperItem } from "@/lib/store/deeperStore";
 import { colors } from "@/lib/theme/colors";
@@ -34,7 +34,7 @@ export default function DeeperLibraryPage() {
           loadError instanceof Error &&
           loadError.message === AUTH_REQUIRED_ERROR
         ) {
-          router.push("/auth");
+          router.push(authPath());
           return;
         }
 
@@ -88,7 +88,7 @@ export default function DeeperLibraryPage() {
         favoriteError instanceof Error &&
         favoriteError.message === AUTH_REQUIRED_ERROR
       ) {
-        router.push("/auth");
+        router.push(authPath());
         return;
       }
 

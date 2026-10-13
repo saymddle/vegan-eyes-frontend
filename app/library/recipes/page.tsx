@@ -7,7 +7,7 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { getRecipes, type SavedRecipe } from "@/lib/api/recipes";
-import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import { colors } from "@/lib/theme/colors";
 
 export default function LibraryRecipesPage() {
@@ -30,7 +30,7 @@ export default function LibraryRecipesPage() {
           loadError instanceof Error &&
           loadError.message === AUTH_REQUIRED_ERROR
         ) {
-          router.push("/auth");
+          router.push(authPath());
         }
       } finally {
         if (isActive) {
