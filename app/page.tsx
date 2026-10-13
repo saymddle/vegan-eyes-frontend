@@ -6,10 +6,10 @@ import Webcam from "react-webcam";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoSwitch from "@/components/ui/NeoSwitch";
 import NeoWindow from "@/components/ui/NeoWindow";
+import { storeScanInput } from "@/lib/store/recipeInput";
 import { colors } from "@/lib/theme/colors";
 import type { Ingredient } from "@/lib/utils/ocrIngredients";
 
-const INPUT_STORAGE_KEY = "vegan-eyes:last-scan";
 const messages = ["SCAN A RECIPE", "SCAN AN INGREDIENT"];
 
 export default function Home() {
@@ -24,6 +24,7 @@ export default function Home() {
   const [visible, setVisible] = useState(true);
   const [image, setImage] = useState<string | null>(null);
   const [rawText, setRawText] = useState<string>("");
+  const [scanError, setScanError] = useState("");
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -57,6 +58,7 @@ export default function Home() {
 
   async function handleScan(imageBase64: string) {
     setLoading(true);
+    setScanError("");
 
     try {
       const res = await fetch("/api/scan", {
@@ -74,6 +76,16 @@ export default function Home() {
 
       setIngredients(data.ingredients ?? []);
       setRawText(data.raw ?? "");
+
+      if (!res.ok || !data.raw?.trim()) {
+        setScanError("Couldn't read any text. Try a closer, brighter photo.");
+        return;
+      }
+
+      storeScanInput(data.raw, "photo");
+      router.push("/convert");
+    } catch {
+      setScanError("Scan failed. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -82,8 +94,8 @@ export default function Home() {
   const handleAnalyze = async () => {
     if (mode === "type") {
       setIsLoading(true);
-      sessionStorage.setItem(INPUT_STORAGE_KEY, typedIngredients.trim());
-      router.push("/results");
+      storeScanInput(typedIngredients.trim(), "paste");
+      router.push("/convert");
       return;
     }
 
@@ -152,11 +164,19 @@ export default function Home() {
                   value={typedIngredients}
                   onChange={(event) => setTypedIngredients(event.target.value)}
                   rows={9}
-                  placeholder="Type ingredients: sugar, cocoa butter, soy lecithin..."
+                  placeholder="Paste a recipe or type ingredients: 2 eggs, 1 cup milk, butter..."
                   className="min-h-[220px] w-full resize-none bg-transparent text-base font-black uppercase leading-7 tracking-[0.04em] outline-none placeholder:text-[#474238]/40"
                 />
               )}
             </div>
+
+            {scanError ? (
+              <NeoWindow title="Scan Error" variant="not_vegan" size="sm">
+                <p className="text-sm font-black uppercase tracking-[0.04em]">
+                  {scanError}
+                </p>
+              </NeoWindow>
+            ) : null}
 
             {mode === "scan" && rawText ? (
               <NeoWindow title="OCR Result" variant="maybe" size="sm">
