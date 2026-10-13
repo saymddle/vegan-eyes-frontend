@@ -90,6 +90,25 @@ export default function AuthPage() {
     }
   }
 
+  async function handleGoogle() {
+    if (!supabase) {
+      setError("Sign-in isn't available right now.");
+      return;
+    }
+
+    setError("");
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth?next=${encodeURIComponent(readNext())}`
+      }
+    });
+
+    if (oauthError) {
+      setError("Google sign-in isn't available right now. Use email instead.");
+    }
+  }
+
   async function handleSignOut() {
     await supabase?.auth.signOut();
     setSignedInAs(null);
@@ -137,6 +156,14 @@ export default function AuthPage() {
             </h1>
             <p className="text-sm font-bold uppercase leading-6 tracking-[0.04em]">
               Sign in to save your vegan recipes and scans.
+            </p>
+
+            <NeoButton onClick={handleGoogle} tone="base">
+              Continue with Google
+            </NeoButton>
+
+            <p className="text-center text-xs font-black uppercase tracking-[0.12em]">
+              or use email
             </p>
 
             <label className="flex flex-col gap-2 text-xs font-black uppercase tracking-[0.08em]">
