@@ -39,14 +39,22 @@ export type VeganizedRecipe = {
 const HEADING =
   /^(ingredients?|instructions?|directions?|method|steps?|preparation|notes?|for the [a-z ]+)\s*:?$/i;
 const STEP_HEADING = /^(instructions?|directions?|method|steps?|preparation)\s*:?$/i;
+// Sub-section labels inside a recipe: "Seasoning:", "Garnish, optional:".
+const SECTION_LABEL = /^[^.!?]{1,40}:$/;
 const MAX_INGREDIENT_WORDS = 12;
+// "4 chicken breasts, 150-180g each (Note 1)" is an ingredient however long.
+const STARTS_WITH_AMOUNT = /^(?:\d|[½¼¾⅓⅔⅛])/;
+// Buttons and toggles that come along when a recipe is copied from a website.
+const SITE_JUNK =
+  /^(cook mode|prevent (your )?screen from (sleeping|going dark)|print( recipe)?|pin( recipe)?|jump to recipe|save recipe|rate this recipe|video)$/i;
 
-// OCR returns markdown, so drop list bullets, table pipes and heading marks
-// before deciding what a line is.
+// OCR returns markdown and recipe sites add checkboxes, so drop list
+// bullets, checkboxes, table pipes and heading marks before deciding what a
+// line is.
 function stripMarkdown(line: string) {
   return line
     .replace(/^\s*#+\s*/, "")
-    .replace(/^\s*[-*•]\s+/, "")
+    .replace(/^\s*(?:[-*•▢☐□◻■▪✓✔]|\[[ xX]?\])\s*/, "")
     .replace(/\|/g, " ")
     .replace(/\*\*|__/g, "")
     .trim();
@@ -231,11 +239,25 @@ export function veganizeRecipe(
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => /[a-zA-Z0-9]/.test(line))
-    .forEach((raw) => {
+    .forEach((raw, at) => {
       const line = stripMarkdown(raw);
       const isMarkdownHeading = /^\s*#/.test(raw);
+      if (SITE_JUNK.test(line)) return;
 
-      if (isMarkdownHeading || HEADING.test(line)) {
+      // A pasted recipe often starts with its name and no markdown.
+      if (
+        at === 0 &&
+        !isMarkdownHeading &&
+        !HEADING.test(line) &&
+        !STARTS_WITH_AMOUNT.test(line) &&
+        line.split(/\s+/).length <= 10
+      ) {
+        title = line;
+        lines.push({ kind: "heading", original: line, vegan: line, parts: [{ text: line }] });
+        return;
+      }
+
+      if (isMarkdownHeading || HEADING.test(line) || (!inSteps && SECTION_LABEL.test(line))) {
         if (STEP_HEADING.test(line)) inSteps = true;
         else if (/^ingredients?\s*:?$/i.test(line)) inSteps = false;
         if (!title && isMarkdownHeading && !HEADING.test(line)) title = line;
@@ -245,7 +267,10 @@ export function veganizeRecipe(
 
       const wordCount = line.split(/\s+/).length;
       const kind =
-        inSteps || wordCount > MAX_INGREDIENT_WORDS ? "step" : "ingredient";
+        inSteps ||
+        (wordCount > MAX_INGREDIENT_WORDS && !STARTS_WITH_AMOUNT.test(line))
+          ? "step"
+          : "ingredient";
 
       const matches = findFlagged(line, index).flatMap(({ row, words }): Phrase[] => {
         if (kind === "ingredient") return [{ words, swap: swapFor(row) }];

@@ -33,9 +33,10 @@ export function veganRecipeText(recipe: VeganizedRecipe) {
 
 // A recipe's title, or its first line when the scan had no heading.
 export function veganRecipeTitle(recipe: VeganizedRecipe) {
-  const first = recipe.lines.find((line) => line.kind !== "heading");
-  const fallback = first?.original.split(/\s+/).slice(0, 6).join(" ");
-  return recipe.title || fallback || "Vegan recipe";
+  // Pasted recipes often start at "Ingredients", so name it after the main
+  // thing that was swapped rather than its first ingredient line.
+  const main = recipe.swaps.find((swap) => swap.replacement);
+  return recipe.title || (main ? `Vegan ${main.ingredient}` : "Vegan recipe");
 }
 
 type Props = {

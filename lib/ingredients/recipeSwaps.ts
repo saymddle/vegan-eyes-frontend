@@ -33,8 +33,8 @@ const broth: RecipeRule = {
 const chicken: RecipeRule = {
   replacement: "seitan",
   alternative: "extra-firm tofu or chickpeas",
-  // About 200 g per breast or thigh.
-  withQuantity: (count) => `${amount(count * 200)} g seitan`
+  // "4 chicken breasts, 150-180g each" reads as "4 seitan cutlets, 150-180g each".
+  withQuantity: (count) => `${amount(count)} seitan ${count === 1 ? "cutlet" : "cutlets"}`
 };
 const beef: RecipeRule = {
   replacement: "plant-based mince",
