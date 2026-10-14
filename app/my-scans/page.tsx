@@ -7,7 +7,7 @@ import IngredientCard from "@/components/features/IngredientCard";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { getScans } from "@/lib/api/getScans";
-import { AUTH_REQUIRED_ERROR } from "@/lib/api/scansAuth";
+import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import type { SavedScan } from "@/lib/store/savedScans";
 import { colors } from "@/lib/theme/colors";
 
@@ -36,7 +36,7 @@ export default function MyScansPage() {
           loadError instanceof Error &&
           loadError.message === AUTH_REQUIRED_ERROR
         ) {
-          router.push("/auth");
+          router.push(authPath());
           return;
         }
 
