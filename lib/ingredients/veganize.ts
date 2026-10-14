@@ -7,6 +7,7 @@ import {
   type IngredientRow,
   type Status
 } from "./matcher";
+import { parseQuantity, RECIPE_RULES, SIZE_WORDS } from "./recipeSwaps";
 
 export type RecipeSwap = {
   ingredient: string;
@@ -88,6 +89,16 @@ function toSwap(row: IngredientRow): RecipeSwap {
     };
   }
 
+  const rule = RECIPE_RULES[normalize(row.name)];
+  if (rule) {
+    return {
+      ingredient: row.name,
+      status,
+      replacement: rule.replacement,
+      alternative: rule.alternative ?? alternative
+    };
+  }
+
   return {
     ingredient: row.name,
     status,
@@ -106,8 +117,33 @@ function escapeRegex(text: string) {
 const CUTS =
   "(?:[^a-zA-Z0-9]+(?:breasts?|thighs?|fillets?|filets?|wings?|drumsticks?|tenders|tenderloins?|cutlets?|steaks?|legs?|chops?|mince))?";
 
-function phrasePattern(words: string[]) {
-  return words.map(escapeRegex).join("[^a-zA-Z0-9]+") + CUTS;
+// A leading amount for swaps that rewrite the quantity: "2 large eggs".
+const QUANTITY = `(?:(?:\\d+(?:\\.\\d+)?|\\d+/\\d+|[½¼¾⅓⅔])\\s+(?:${SIZE_WORDS}\\s+)?)?`;
+
+// Dairy descriptions that make no sense on the swap: "whole milk" becomes
+// "unsweetened oat milk", not "whole unsweetened oat milk".
+const DAIRY_WORDS =
+  "(?:(?:whole|skim|skimmed|low[- ]fat|reduced[- ]fat|full[- ]fat|2%|grated|shredded|freshly grated)\\s+)?";
+
+function phrasePattern(words: string[], withQuantity: boolean) {
+  const phrase = DAIRY_WORDS + words.map(escapeRegex).join("[^a-zA-Z0-9]+") + CUTS;
+  return withQuantity ? QUANTITY + phrase : phrase;
+}
+
+function ruleFor(swap: RecipeSwap) {
+  return RECIPE_RULES[normalize(swap.ingredient)];
+}
+
+// "2 large eggs" becomes "2 flax eggs (...)"; without an amount the plain
+// replacement is used.
+function replacementText(swap: RecipeSwap, matched: string) {
+  const amount = matched.match(/^([\d./½¼¾⅓⅔]+)\s/);
+  const quantity = amount ? parseQuantity(amount[1]) : undefined;
+  const rule = ruleFor(swap);
+  if (quantity !== undefined && rule?.withQuantity) {
+    return rule.withQuantity(quantity);
+  }
+  return (amount ? matched.slice(0, amount[0].length) : "") + swap.replacement;
 }
 
 type Phrase = { words: string[]; swap: number; skipAtStart?: boolean };
@@ -127,7 +163,7 @@ function replacePhrases(
 
   // One capture group per phrase tells us which one matched.
   const pattern = new RegExp(
-    `(?<![a-zA-Z0-9])(?:${usable.map(({ words }) => `(${phrasePattern(words)})`).join("|")})(?![a-zA-Z0-9])`,
+    `(?<![a-zA-Z0-9])(?:${usable.map(({ words, swap }) => `(${phrasePattern(words, Boolean(ruleFor(swaps[swap])?.withQuantity))})`).join("|")})(?![a-zA-Z0-9])`,
     "gi"
   );
   // Where the text starts, after any step number ("1. Cream the butter").
@@ -142,7 +178,7 @@ function replacePhrases(
     if (!phrase || (phrase.skipAtStart && start === firstWord)) continue;
     if (start > last) parts.push({ text: line.slice(last, start) });
     parts.push({
-      text: matchCase(swaps[phrase.swap].replacement as string, start === firstWord),
+      text: matchCase(replacementText(swaps[phrase.swap], found[0]), start === firstWord),
       swap: phrase.swap
     });
     last = start + found[0].length;
