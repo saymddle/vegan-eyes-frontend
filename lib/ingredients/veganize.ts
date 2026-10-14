@@ -214,12 +214,17 @@ export function veganizeRecipe(
   let title: string | null = null;
   let inSteps = false;
 
-  const swapFor = (row: IngredientRow) => {
+  // Swaps first found in a step are kept only if a step actually used them,
+  // so "Cream the sugar" does not list a cream swap.
+  const fromSteps = new Set<number>();
+
+  const swapFor = (row: IngredientRow, inStep = false) => {
     const key = normalize(row.name);
     let at = swapByRow.get(key);
     if (at === undefined) {
       at = swaps.push(toSwap(row)) - 1;
       swapByRow.set(key, at);
+      if (inStep) fromSteps.add(at);
     }
     return at;
   };
@@ -234,12 +239,14 @@ export function veganizeRecipe(
     return undefined;
   };
 
-  text
+  const rawLines = text
     .replace(/\r/g, "")
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => /[a-zA-Z0-9]/.test(line))
-    .forEach((raw, at) => {
+    .filter((line) => /[a-zA-Z0-9]/.test(line));
+  const total = rawLines.length;
+
+  rawLines.forEach((raw, at) => {
       const line = stripMarkdown(raw);
       const isMarkdownHeading = /^\s*#/.test(raw);
       if (SITE_JUNK.test(line)) return;
@@ -247,6 +254,8 @@ export function veganizeRecipe(
       // A pasted recipe often starts with its name and no markdown.
       if (
         at === 0 &&
+        total > 1 &&
+        !/[,.;]/.test(line) &&
         !isMarkdownHeading &&
         !HEADING.test(line) &&
         !STARTS_WITH_AMOUNT.test(line) &&
@@ -274,11 +283,13 @@ export function veganizeRecipe(
 
       const matches = findFlagged(line, index).flatMap(({ row, words }): Phrase[] => {
         if (kind === "ingredient") return [{ words, swap: swapFor(row) }];
-        // In method steps, only swap what the ingredient list already swapped,
-        // so "cream the sugar" is left alone when there is no cream in it.
         // A step's first word is usually a verb ("Cream", "Butter"), so it is
-        // never swapped.
-        const swap = stepSwap(normalize(row.name));
+        // never swapped. "cream" in a step means the "heavy cream" from the
+        // ingredient list; anything non-vegan the list missed is swapped too,
+        // wherever it appears.
+        const swap =
+          stepSwap(normalize(row.name)) ??
+          (toStatus(row.vegan_status) === "non_vegan" ? swapFor(row, true) : undefined);
         return swap === undefined ? [] : [{ words, swap, skipAtStart: true }];
       });
 
@@ -290,6 +301,18 @@ export function veganizeRecipe(
         parts
       });
     });
+
+  const used = new Set(
+    lines.flatMap((line) => line.parts.map((part) => part.swap))
+  );
+  const keep = swaps.map((_, at) => !fromSteps.has(at) || used.has(at));
+  const newIndex = keep.map((_, at) => keep.slice(0, at).filter(Boolean).length);
+  lines.forEach((line) =>
+    line.parts.forEach((part) => {
+      if (part.swap !== undefined) part.swap = newIndex[part.swap];
+    })
+  );
+  swaps.splice(0, swaps.length, ...swaps.filter((_, at) => keep[at]));
 
   const status: Status = swaps.some((swap) => swap.status === "non_vegan")
     ? "non_vegan"
