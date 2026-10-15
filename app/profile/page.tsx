@@ -5,40 +5,58 @@ import { useEffect, useState } from "react";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { getScans } from "@/lib/api/getScans";
-import { getRecipes } from "@/lib/api/recipes";
+import { getProfile, saveProfile } from "@/lib/api/profile";
+import { getRecipes, type SavedRecipe } from "@/lib/api/recipes";
 import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import type { SavedScan } from "@/lib/store/savedScans";
 import { supabase } from "@/lib/supabase/client";
 import { colors } from "@/lib/theme/colors";
 
-const settingsItems = [
-  "Edit Profile",
-  "Preferences",
-  "Saved Data",
-  "About"
-];
+// The ingredients swapped most often across saved recipes.
+function topSwaps(recipes: SavedRecipe[]) {
+  const counts = new Map<string, number>();
+  recipes.forEach(({ recipe }) =>
+    recipe.swaps
+      .filter((swap) => swap.replacement)
+      .forEach((swap) => {
+        const name = swap.ingredient.toLowerCase();
+        counts.set(name, (counts.get(name) ?? 0) + 1);
+      })
+  );
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+}
+
+const inputClass =
+  "w-full border-[3px] border-[#000000] bg-white px-3 py-3 text-base font-bold text-black outline-none";
 
 export default function ProfilePage() {
   const router = useRouter();
   const [scans, setScans] = useState<SavedScan[]>([]);
-  const [recipeCount, setRecipeCount] = useState(0);
+  const [recipes, setRecipes] = useState<SavedRecipe[]>([]);
   const [email, setEmail] = useState<string | null>(null);
-  const [activeSetting, setActiveSetting] = useState("Edit Profile");
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   useEffect(() => {
     let isActive = true;
 
     async function loadProfileScans() {
       try {
-        const [nextScans, recipes, user] = await Promise.all([
+        const [nextScans, nextRecipes, profile, user] = await Promise.all([
           getScans(),
           getRecipes(),
+          getProfile(),
           supabase?.auth.getUser()
         ]);
 
         if (isActive) {
           setScans(nextScans);
-          setRecipeCount(recipes.length);
+          setRecipes(nextRecipes);
+          setDisplayName(profile.displayName);
+          setBio(profile.bio);
           setEmail(user?.data.user?.email ?? null);
         }
       } catch (loadError) {
@@ -58,10 +76,32 @@ export default function ProfilePage() {
     };
   }, [router]);
 
+  async function handleSaveProfile(event: React.FormEvent) {
+    event.preventDefault();
+    setIsSaving(true);
+    setSaveError("");
+
+    try {
+      await saveProfile({ displayName, bio });
+      setIsEditing(false);
+    } catch {
+      setSaveError("Could not save your profile. Try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   async function handleSignOut() {
     await supabase?.auth.signOut();
     router.push("/");
   }
+
+  const mostSwapped = topSwaps(recipes);
+  const swapCount = recipes.reduce(
+    (total, { recipe }) =>
+      total + recipe.swaps.filter((swap) => swap.replacement).length,
+    0
+  );
 
   return (
     <main className="app-shell" style={{ backgroundColor: colors.base }}>
@@ -71,42 +111,91 @@ export default function ProfilePage() {
             <div className="h-16 w-16 rounded-full border-[3px] border-[#000000] bg-[#DEE1E0]" />
             <div className="flex flex-col gap-2">
               <h1 className="break-all text-2xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
-                {email ? email.split("@")[0] : "Guest"}
+                {displayName || (email ? email.split("@")[0] : "Guest")}
               </h1>
-              <p className="text-sm font-bold uppercase tracking-[0.08em]">
-                Your account
+              <p className="break-all text-sm font-bold uppercase tracking-[0.08em]">
+                {email ?? "Your account"}
               </p>
             </div>
           </div>
+          {bio ? (
+            <p className="mt-4 text-sm font-bold leading-6">{bio}</p>
+          ) : null}
         </NeoWindow>
 
-        <div className="grid grid-cols-2 gap-4">
-          <NeoWindow title="Total Scans" variant="maybe" size="sm">
+        <div className="grid grid-cols-3 gap-3">
+          <NeoWindow title="Scans" variant="maybe" size="sm">
             <p className="text-4xl font-black uppercase">{scans.length}</p>
           </NeoWindow>
-          <NeoWindow title="Saved Recipes" variant="maybe" size="sm">
-            <p className="text-4xl font-black uppercase">{recipeCount}</p>
+          <NeoWindow title="Recipes" variant="maybe" size="sm">
+            <p className="text-4xl font-black uppercase">{recipes.length}</p>
+          </NeoWindow>
+          <NeoWindow title="Swaps" variant="maybe" size="sm">
+            <p className="text-4xl font-black uppercase">{swapCount}</p>
           </NeoWindow>
         </div>
 
-        {settingsItems.map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => setActiveSetting(item)}
-            className="cursor-pointer text-left transition-all hover:translate-x-[1px] hover:translate-y-[1px]"
-          >
-            <NeoWindow
-              title={item}
-              variant={activeSetting === item ? "vegan" : "maybe"}
-              size="sm"
-            >
-              <p className="text-sm font-black uppercase tracking-[0.04em]">
-                {activeSetting === item ? "Selected" : "Open"}
-              </p>
-            </NeoWindow>
-          </button>
-        ))}
+        <NeoWindow title="Most Swapped" variant="vegan" size="md">
+          {mostSwapped.length ? (
+            <ol className="flex flex-col gap-2">
+              {mostSwapped.map(([name, count]) => (
+                <li
+                  key={name}
+                  className="flex justify-between text-sm font-black uppercase tracking-[0.04em]"
+                >
+                  <span>{name}</span>
+                  <span>{count}x</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-sm font-bold uppercase tracking-[0.04em]">
+              Save a converted recipe to see what you swap most.
+            </p>
+          )}
+        </NeoWindow>
+
+        <NeoWindow title="Edit Profile" variant="maybe" size="md">
+          {isEditing ? (
+            <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
+              <label className="flex flex-col gap-2 text-xs font-black uppercase tracking-[0.08em]">
+                Display name
+                <input
+                  value={displayName}
+                  maxLength={40}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  className={inputClass}
+                />
+              </label>
+              <label className="flex flex-col gap-2 text-xs font-black uppercase tracking-[0.08em]">
+                Bio
+                <textarea
+                  value={bio}
+                  maxLength={200}
+                  rows={3}
+                  onChange={(event) => setBio(event.target.value)}
+                  className={inputClass}
+                />
+              </label>
+              {saveError ? (
+                <p className="text-sm font-black uppercase tracking-[0.04em]">
+                  {saveError}
+                </p>
+              ) : null}
+              <NeoButton type="submit" disabled={isSaving} tone="secondary">
+                {isSaving ? "Saving..." : "Save Profile"}
+              </NeoButton>
+            </form>
+          ) : (
+            <NeoButton onClick={() => setIsEditing(true)} tone="base" className="w-full">
+              Edit Name and Bio
+            </NeoButton>
+          )}
+        </NeoWindow>
+
+        <NeoButton href="/library" tone="base" className="w-full">
+          Your Library
+        </NeoButton>
 
         <NeoButton onClick={handleSignOut} tone="danger" className="w-full">
           Sign Out
