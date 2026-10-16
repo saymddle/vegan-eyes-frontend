@@ -10,6 +10,7 @@ import VeganRecipeView, {
 import BackButton from "@/components/ui/BackButton";
 import NeoButton from "@/components/ui/NeoButton";
 import { saveRecipe } from "@/lib/api/recipes";
+import { reportSwap, type SwapReportReason } from "@/lib/api/swapReports";
 import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import {
   applySwapChoices,
@@ -104,6 +105,36 @@ export default function ConvertPage() {
     });
     // A changed recipe is a different recipe from the one saved.
     setSavedId(null);
+  }
+
+  async function handleReport(
+    swap: number,
+    reason: SwapReportReason,
+    note: string
+  ) {
+    if (!converted) return;
+    // Report what the converter suggested, not what the cook picked.
+    const suggested = converted.swaps[swap];
+    const line = converted.lines.find((recipeLine) =>
+      recipeLine.parts.some((part) => part.swap === swap)
+    );
+    try {
+      await reportSwap({
+        ingredient: suggested.ingredient,
+        suggestedSwap: suggested.replacement,
+        recipeLine: line?.original,
+        reason,
+        note
+      });
+    } catch (reportError) {
+      if (
+        reportError instanceof Error &&
+        reportError.message === AUTH_REQUIRED_ERROR
+      ) {
+        router.push(authPath());
+      }
+      throw reportError;
+    }
   }
 
   async function handleCopy() {
@@ -215,6 +246,7 @@ export default function ConvertPage() {
             recipe={recipe}
             choices={choices}
             onChoose={handleChoose}
+            onReport={handleReport}
             actions={
               <div className="flex flex-col gap-3">
                 {savedId ? (
