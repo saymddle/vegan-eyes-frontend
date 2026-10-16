@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import IngredientCard from "@/components/features/IngredientCard";
+import BackButton from "@/components/ui/BackButton";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { checkIngredients } from "@/lib/api/check";
@@ -175,6 +176,7 @@ export default function ResultsPage() {
       ) : null}
 
       <div className="relative z-10 mx-auto flex max-w-[500px] flex-col gap-6">
+        <BackButton fallback="/convert" />
         <div
           className={`transition-all duration-300 ease-out ${
             focusedIngredient ? "opacity-60 blur-[1px]" : "opacity-100"

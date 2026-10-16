@@ -7,6 +7,7 @@ import VeganRecipeView, {
   veganRecipeText,
   veganRecipeTitle
 } from "@/components/features/VeganRecipeView";
+import BackButton from "@/components/ui/BackButton";
 import NeoButton from "@/components/ui/NeoButton";
 import { saveRecipe } from "@/lib/api/recipes";
 import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
@@ -154,6 +155,7 @@ export default function ConvertPage() {
   return (
     <main className="app-shell" style={{ backgroundColor: colors.base }}>
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
+        <BackButton label="Scan" />
         {isLoading ? (
           <section
             className="border-[3px] border-[#000000] p-4 shadow-[8px_8px_0px_#000000]"

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
+import WelcomeCard from "@/components/features/WelcomeCard";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoSwitch from "@/components/ui/NeoSwitch";
 import NeoWindow from "@/components/ui/NeoWindow";
@@ -109,6 +110,7 @@ export default function Home() {
   return (
     <main className="app-shell" style={{ backgroundColor: colors.primary }}>
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
+        <WelcomeCard />
         <NeoWindow title="Vegan Eyes Scan" variant="vegan" size="lg">
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between gap-4">

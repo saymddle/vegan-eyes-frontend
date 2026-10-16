@@ -7,8 +7,13 @@ export type SwapChoices = Record<number, SwapChoice>;
 const AMOUNT = /^[\d./½¼¾⅓⅔]+\s/;
 
 function chosenText(part: LinePart, alternative: string) {
-  const amount = part.original?.match(AMOUNT)?.[0] ?? "";
-  return amount + matchCase(alternative, /^[A-Z]/.test(part.text));
+  const text = matchCase(alternative, /^[A-Z]/.test(part.text));
+  // A swap that rewrote the amount ("4 chicken breasts" as "4 seitan
+  // cutlets") does not carry over to the alternative ("4 chickpeas"), so
+  // say what it stands in for instead.
+  return part.original && AMOUNT.test(part.original)
+    ? `${text} (in place of ${part.original})`
+    : text;
 }
 
 // Applies the cook's picks so the recipe that is shown, copied and saved is
