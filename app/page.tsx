@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
+import WelcomeCard from "@/components/features/WelcomeCard";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoSwitch from "@/components/ui/NeoSwitch";
 import NeoWindow from "@/components/ui/NeoWindow";
@@ -25,6 +26,7 @@ export default function Home() {
   const [image, setImage] = useState<string | null>(null);
   const [rawText, setRawText] = useState<string>("");
   const [scanError, setScanError] = useState("");
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -109,8 +111,31 @@ export default function Home() {
   return (
     <main className="app-shell" style={{ backgroundColor: colors.primary }}>
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
-        <NeoWindow title="Vegan Eyes Scan" variant="vegan" size="lg">
+        <NeoWindow
+          title="Vegan Eyes Scan"
+          variant="vegan"
+          size="lg"
+          headerAction={
+            <button
+              type="button"
+              onClick={() => setShowHelp((open) => !open)}
+              aria-expanded={showHelp}
+              aria-controls="how-it-works"
+              aria-label="How Vegan Eyes works"
+              className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#000000] text-base font-black"
+              style={{
+                backgroundColor: showHelp ? colors.black : colors.white,
+                color: showHelp ? colors.white : colors.black
+              }}
+            >
+              ?
+            </button>
+          }
+        >
           <div className="flex flex-col gap-6">
+            {showHelp ? (
+              <WelcomeCard onClose={() => setShowHelp(false)} />
+            ) : null}
             <div className="flex items-center justify-between gap-4">
               <div className="flex h-[80px] max-w-[260px] items-end">
                 <h1
