@@ -17,9 +17,12 @@ export type RecipeSwap = {
   replacement?: string;
   alternative?: string;
   note?: string;
+  // The cook chose to keep the original ingredient.
+  kept?: boolean;
 };
 
-export type LinePart = { text: string; swap?: number };
+// `original` is the matched text, kept so a swap can be undone.
+export type LinePart = { text: string; swap?: number; original?: string };
 
 export type RecipeLine = {
   kind: "heading" | "ingredient" | "step";
@@ -68,7 +71,7 @@ function cleanSwap(text: string | null | undefined) {
 
 // "Vegan butter" reads better mid-line as "vegan butter", but keeps its
 // capital at the start of a line.
-function matchCase(replacement: string, atStart: boolean) {
+export function matchCase(replacement: string, atStart: boolean) {
   if (atStart) {
     return replacement.charAt(0).toUpperCase() + replacement.slice(1);
   }
@@ -187,7 +190,8 @@ function replacePhrases(
     if (start > last) parts.push({ text: line.slice(last, start) });
     parts.push({
       text: matchCase(replacementText(swaps[phrase.swap], found[0]), start === firstWord),
-      swap: phrase.swap
+      swap: phrase.swap,
+      original: found[0]
     });
     last = start + found[0].length;
   }

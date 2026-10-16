@@ -3,7 +3,6 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import VeganRecipeView, {
-  recipeStatusCopy,
   veganRecipeText
 } from "@/components/features/VeganRecipeView";
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -16,13 +15,14 @@ import {
 } from "@/lib/api/recipes";
 import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import { colors } from "@/lib/theme/colors";
+import { shareText } from "@/lib/utils/share";
 
 export default function RecipeDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [saved, setSaved] = useState<SavedRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     let isActive = true;
@@ -60,11 +60,22 @@ export default function RecipeDetailPage() {
 
     try {
       await navigator.clipboard.writeText(veganRecipeText(saved.recipe));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      flash("Copied");
     } catch {
-      // Clipboard can be blocked; the text is still on screen to select.
+      flash("Copy failed. Select the text and copy it instead.");
     }
+  }
+
+  function flash(message: string) {
+    setNotice(message);
+    setTimeout(() => setNotice(""), 2000);
+  }
+
+  async function handleShare() {
+    if (!saved) return;
+    const result = await shareText(saved.title, veganRecipeText(saved.recipe));
+    if (result === "copied") flash("Copied to share");
+    if (result === "failed") flash("Sharing isn't available here.");
   }
 
   async function handleDelete() {
@@ -84,7 +95,6 @@ export default function RecipeDetailPage() {
   }
 
   const title = saved?.title ?? "Recipe Detail";
-  const summary = saved ? recipeStatusCopy[saved.recipe.status] : null;
 
   return (
     <main className="app-shell" style={{ backgroundColor: colors.base }}>
@@ -118,33 +128,42 @@ export default function RecipeDetailPage() {
           </NeoWindow>
         ) : null}
 
-        {!isLoading && saved && summary ? (
+        {!isLoading && saved ? (
           <>
-            <NeoWindow title={title} variant={summary.variant} size="lg">
-              <div className="flex flex-col gap-4">
-                <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
-                  {summary.title}
-                </h1>
-                <p className="text-sm font-bold uppercase tracking-[0.08em]">
-                  Saved {new Date(saved.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </NeoWindow>
-
-            <VeganRecipeView recipe={saved.recipe} />
-
-            <div className="flex flex-col gap-3">
-              <NeoButton
-                onClick={handleCopy}
-                tone={copied ? "secondary" : "primary"}
-                className="w-full"
-              >
-                {copied ? "Copied" : "Copy Vegan Recipe"}
-              </NeoButton>
-              <NeoButton onClick={handleDelete} tone="danger" className="w-full">
-                Delete
-              </NeoButton>
-            </div>
+            <VeganRecipeView
+              recipe={{ ...saved.recipe, title: saved.title }}
+              subtitle={`Saved ${new Date(saved.createdAt).toLocaleDateString()}`}
+              actions={
+                <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <NeoButton onClick={handleCopy} className="text-sm">
+                      Copy
+                    </NeoButton>
+                    <NeoButton
+                      onClick={handleShare}
+                      tone="base"
+                      className="text-sm"
+                    >
+                      Share
+                    </NeoButton>
+                  </div>
+                  <p
+                    className="min-h-5 text-center text-xs font-black uppercase"
+                    aria-live="polite"
+                  >
+                    {notice}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="self-center text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
+                    style={{ color: colors.alert }}
+                  >
+                    Delete recipe
+                  </button>
+                </div>
+              }
+            />
           </>
         ) : null}
       </div>
