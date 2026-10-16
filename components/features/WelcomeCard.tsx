@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { colors } from "@/lib/theme/colors";
-
-const SEEN_KEY = "vegan-eyes:welcome-seen";
 
 const steps = [
   "Snap a photo of a recipe, or switch to Type and paste one.",
@@ -11,31 +8,15 @@ const steps = [
   "Tap any swap to change it, then save the recipe to your Library."
 ];
 
-// Shown once, on a first visit, so new cooks know what the app does.
-export default function WelcomeCard() {
-  const [show, setShow] = useState(false);
+type Props = {
+  onClose: () => void;
+};
 
-  useEffect(() => {
-    try {
-      setShow(!localStorage.getItem(SEEN_KEY));
-    } catch {
-      // Storage can be blocked; skip the welcome rather than show it forever.
-    }
-  }, []);
-
-  function dismiss() {
-    setShow(false);
-    try {
-      localStorage.setItem(SEEN_KEY, "1");
-    } catch {
-      // Nothing to do; it simply shows again next visit.
-    }
-  }
-
-  if (!show) return null;
-
+// How the app works in three steps, opened from the "?" on the scan screen.
+export default function WelcomeCard({ onClose }: Props) {
   return (
     <section
+      id="how-it-works"
       className="border-[3px] border-[#000000] p-4"
       style={{ backgroundColor: colors.white, color: colors.black }}
     >
@@ -57,11 +38,11 @@ export default function WelcomeCard() {
       </ol>
       <button
         type="button"
-        onClick={dismiss}
+        onClick={onClose}
         className="mt-4 min-h-[40px] border-2 border-[#000000] px-4 text-xs font-black uppercase tracking-[0.06em]"
         style={{ backgroundColor: colors.black, color: colors.white }}
       >
-        Got it
+        Close
       </button>
     </section>
   );
