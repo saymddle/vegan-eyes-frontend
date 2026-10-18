@@ -112,7 +112,7 @@ export default function Home() {
     <main className="app-shell" style={{ backgroundColor: colors.primary }}>
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <NeoWindow
-          title="Vegan Eyes Scan"
+          title="Scan"
           variant="vegan"
           size="lg"
           headerAction={
