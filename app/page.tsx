@@ -11,7 +11,8 @@ import { storeScanInput } from "@/lib/store/recipeInput";
 import { colors } from "@/lib/theme/colors";
 import type { Ingredient } from "@/lib/utils/ocrIngredients";
 
-const messages = ["SCAN A RECIPE", "SCAN AN INGREDIENT"];
+// The scan heading alternates between these, 5 seconds each.
+const messages = ["SCAN AN INGREDIENT", "CONVERT A RECIPE"];
 
 export default function Home() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function Home() {
         setIndex((prev) => (prev + 1) % messages.length);
         setVisible(true);
       }, 200);
-    }, 2000);
+    }, 5000);
 
     return () => {
       clearInterval(interval);
