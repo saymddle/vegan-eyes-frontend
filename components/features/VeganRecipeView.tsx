@@ -76,6 +76,8 @@ type Props = {
   // The cook's picks. Without onChoose the swaps are read-only.
   choices?: SwapChoices;
   onChoose?: (swap: number, choice: SwapChoice | undefined) => void;
+  // Hides the Vegan/Original switch when the page has its own tabs.
+  hideVersionToggle?: boolean;
   // Buttons placed right under the recipe, above the swap details.
   actions?: ReactNode;
   // Sends a report that a swap is wrong. Without it there is no Report link.
@@ -214,7 +216,8 @@ export default function VeganRecipeView({
   choices = {},
   onChoose,
   actions,
-  onReport
+  onReport,
+  hideVersionToggle = false
 }: Props) {
   const [showOriginal, setShowOriginal] = useState(false);
   const [activeSwap, setActiveSwap] = useState<number | null>(null);
@@ -255,7 +258,11 @@ export default function VeganRecipeView({
 
         <div className="p-4">
           <div
-            className="mb-4 inline-flex border-2 border-[#000000]"
+            className={
+              hideVersionToggle
+                ? "hidden"
+                : "mb-4 inline-flex border-2 border-[#000000]"
+            }
             role="group"
             aria-label="Show recipe version"
           >
