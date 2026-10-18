@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AppHeader from "@/components/ui/AppHeader";
 import BottomNav from "@/components/ui/BottomNav";
 import "./globals.css";
 
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <AppHeader />
         {children}
         <BottomNav />
       </body>

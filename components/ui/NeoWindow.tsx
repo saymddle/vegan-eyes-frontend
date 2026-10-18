@@ -2,6 +2,8 @@ import { colors } from "@/lib/theme/colors";
 
 type Props = {
   title?: string;
+  // A small control shown at the right end of the title bar.
+  headerAction?: React.ReactNode;
   children: React.ReactNode;
   variant?: "vegan" | "not_vegan" | "maybe";
   size?: "sm" | "md" | "lg";
@@ -28,6 +30,7 @@ const sizeMap = {
 
 export default function NeoWindow({
   title,
+  headerAction,
   children,
   variant = "maybe",
   size = "md",
@@ -41,7 +44,12 @@ export default function NeoWindow({
         color: textMap[variant]
       }}
     >
-      {title ? <div className="neo-head text-black">{title}</div> : null}
+      {title ? (
+        <div className="neo-head flex items-center justify-between gap-2 text-black">
+          <span>{title}</span>
+          {headerAction}
+        </div>
+      ) : null}
       <div className="neo-content">{children}</div>
     </div>
   );

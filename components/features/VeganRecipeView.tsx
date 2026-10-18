@@ -3,7 +3,9 @@
 import { useState, type ReactNode } from "react";
 import type { SwapChoice, SwapChoices } from "@/lib/ingredients/swapChoices";
 import type { RecipeSwap, VeganizedRecipe } from "@/lib/ingredients/veganize";
+import type { SwapReportReason } from "@/lib/api/swapReports";
 import { colors } from "@/lib/theme/colors";
+import ReportSwapForm from "./ReportSwapForm";
 
 export function veganRecipeText(recipe: VeganizedRecipe) {
   return recipe.lines
@@ -74,6 +76,12 @@ type Props = {
   onChoose?: (swap: number, choice: SwapChoice | undefined) => void;
   // Buttons placed right under the recipe, above the swap details.
   actions?: ReactNode;
+  // Sends a report that a swap is wrong. Without it there is no Report link.
+  onReport?: (
+    swap: number,
+    reason: SwapReportReason,
+    note: string
+  ) => Promise<void>;
 };
 
 const chip =
@@ -110,7 +118,8 @@ function SwapItem({
   active,
   choice,
   onChoose,
-  onToggle
+  onToggle,
+  onReport
 }: {
   swap: RecipeSwap;
   index: number;
@@ -118,6 +127,7 @@ function SwapItem({
   choice?: SwapChoice;
   onChoose?: Props["onChoose"];
   onToggle: () => void;
+  onReport?: Props["onReport"];
 }) {
   // Picks are made on the suggested swap, so read them off the original.
   const suggested =
@@ -179,6 +189,13 @@ function SwapItem({
         </div>
       ) : null}
 
+      {onChoose && active && onReport ? (
+        <ReportSwapForm
+          ingredient={swap.ingredient}
+          onSubmit={(reason, note) => onReport(index, reason, note)}
+        />
+      ) : null}
+
       {!onChoose && swap.alternative && !swap.kept ? (
         <p className="-mt-2 px-3 pb-3 text-xs uppercase tracking-[0.04em]">
           Or try: {swap.alternative}
@@ -193,7 +210,8 @@ export default function VeganRecipeView({
   subtitle,
   choices = {},
   onChoose,
-  actions
+  actions,
+  onReport
 }: Props) {
   const [showOriginal, setShowOriginal] = useState(false);
   const [activeSwap, setActiveSwap] = useState<number | null>(null);
@@ -333,6 +351,7 @@ export default function VeganRecipeView({
                 active={activeSwap === index}
                 choice={choices[index]}
                 onChoose={onChoose}
+                onReport={onReport}
                 onToggle={() =>
                   setActiveSwap(activeSwap === index ? null : index)
                 }
