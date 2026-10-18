@@ -34,7 +34,7 @@ export function recipeVerdict(recipe: VeganizedRecipe) {
   const toCheck = recipe.swaps.filter((swap) => !swap.replacement);
 
   const details = [
-    swapped.length ? plural(swapped.length, "swap") + " made" : "",
+    swapped.length ? plural(swapped.length, "substitution") + " made" : "",
     toCheck.length ? plural(toCheck.length, "label") + " to check" : "",
     kept.length ? `${kept.length} kept as original` : ""
   ].filter(Boolean);
@@ -69,6 +69,8 @@ export function recipeVerdict(recipe: VeganizedRecipe) {
 
 type Props = {
   recipe: VeganizedRecipe;
+  // The big heading; the recipe's own title when left out.
+  heading?: string;
   // Shown under the verdict, such as when a saved recipe was saved.
   subtitle?: string;
   // The cook's picks. Without onChoose the swaps are read-only.
@@ -207,6 +209,7 @@ function SwapItem({
 
 export default function VeganRecipeView({
   recipe,
+  heading,
   subtitle,
   choices = {},
   onChoose,
@@ -216,7 +219,7 @@ export default function VeganRecipeView({
   const [showOriginal, setShowOriginal] = useState(false);
   const [activeSwap, setActiveSwap] = useState<number | null>(null);
   const verdict = recipeVerdict(recipe);
-  const title = veganRecipeTitle(recipe);
+  const title = heading ?? veganRecipeTitle(recipe);
 
   // Swaps keep their index so a highlight can point at its card.
   const indexed = recipe.swaps.map((swap, index) => ({ swap, index }));
