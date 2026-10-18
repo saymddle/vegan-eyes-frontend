@@ -244,7 +244,7 @@ export default function ConvertPage() {
         {!isLoading && recipe ? (
           <VeganRecipeView
             recipe={recipe}
-            heading="Your substitution"
+            heading="Your substitutions"
             choices={choices}
             onChoose={handleChoose}
             onReport={handleReport}
