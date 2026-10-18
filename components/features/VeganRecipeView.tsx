@@ -243,23 +243,9 @@ export default function VeganRecipeView({
           <h1 className="text-2xl font-black uppercase leading-tight tracking-[-0.02em]">
             {title}
           </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span
-              className="border-2 border-[#000000] px-2 py-0.5 text-xs font-black uppercase tracking-[0.06em]"
-              style={{
-                backgroundColor: verdict.color,
-                color:
-                  verdict.color === colors.secondary
-                    ? colors.black
-                    : colors.white
-              }}
-            >
-              {verdict.title}
-            </span>
-            <span className="text-xs font-bold uppercase tracking-[0.04em]">
-              {verdict.body}
-            </span>
-          </div>
+          <p className="mt-2 text-xs font-bold uppercase tracking-[0.04em]">
+            {verdict.body}
+          </p>
           {subtitle ? (
             <p className="mt-1 text-xs font-bold uppercase tracking-[0.04em] opacity-70">
               {subtitle}
