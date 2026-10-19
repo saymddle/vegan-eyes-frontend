@@ -46,6 +46,7 @@ const sections: { title: string; points: string[] }[] = [
     title: "Deleting your data",
     points: [
       "You can delete any saved recipe or scan from your Library at any time.",
+      "You can delete your whole account from your Profile. That removes your account and everything saved with it, straight away.",
       "Signing out removes your sign-in from this device."
     ]
   }

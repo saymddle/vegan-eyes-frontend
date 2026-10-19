@@ -203,6 +203,14 @@ export default function ProfilePage() {
         </NeoButton>
 
         <Link
+          href="/account/delete"
+          className="self-center text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
+          style={{ color: colors.alert }}
+        >
+          Delete account
+        </Link>
+
+        <Link
           href="/privacy"
           className="self-center text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
         >
