@@ -124,14 +124,29 @@ export default function ProfilePage() {
           ) : null}
         </NeoWindow>
 
-        <div className="grid grid-cols-3 gap-3">
-          <NeoWindow title="Scans" variant="maybe" size="sm">
+        <div className="grid grid-cols-3 gap-2 min-[400px]:gap-3">
+          <NeoWindow
+            title="Scans"
+            variant="maybe"
+            size="sm"
+            className="min-w-0 [&_.neo-head]:px-1.5 [&_.neo-head]:text-[10px] [&_.neo-head]:tracking-normal min-[400px]:[&_.neo-head]:px-2.5 min-[400px]:[&_.neo-head]:text-base"
+          >
             <p className="text-4xl font-black uppercase">{scans.length}</p>
           </NeoWindow>
-          <NeoWindow title="Recipes" variant="maybe" size="sm">
+          <NeoWindow
+            title="Recipes"
+            variant="maybe"
+            size="sm"
+            className="min-w-0 [&_.neo-head]:px-1.5 [&_.neo-head]:text-[10px] [&_.neo-head]:tracking-normal min-[400px]:[&_.neo-head]:px-2.5 min-[400px]:[&_.neo-head]:text-base"
+          >
             <p className="text-4xl font-black uppercase">{recipes.length}</p>
           </NeoWindow>
-          <NeoWindow title="Swaps" variant="maybe" size="sm">
+          <NeoWindow
+            title="Swaps"
+            variant="maybe"
+            size="sm"
+            className="min-w-0 [&_.neo-head]:px-1.5 [&_.neo-head]:text-[10px] [&_.neo-head]:tracking-normal min-[400px]:[&_.neo-head]:px-2.5 min-[400px]:[&_.neo-head]:text-base"
+          >
             <p className="text-4xl font-black uppercase">{swapCount}</p>
           </NeoWindow>
         </div>
@@ -204,15 +219,15 @@ export default function ProfilePage() {
 
         <Link
           href="/account/delete"
-          className="self-center text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
-          style={{ color: colors.alert }}
+          className="inline-flex min-h-[44px] items-center self-center px-2 text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
+          style={{ color: "#7a4137" }}
         >
           Delete account
         </Link>
 
         <Link
           href="/privacy"
-          className="self-center text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
+          className="inline-flex min-h-[44px] items-center self-center px-2 text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
         >
           Privacy
         </Link>

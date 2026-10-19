@@ -187,7 +187,7 @@ export default function Home() {
               aria-expanded={showHelp}
               aria-controls="how-it-works"
               aria-label="How Vegan Eyes works"
-              className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#000000] text-base font-black"
+              className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#000000] text-base font-black after:absolute after:-inset-2 after:content-['']"
               style={{
                 backgroundColor: showHelp ? colors.black : colors.white,
                 color: showHelp ? colors.white : colors.black
@@ -245,7 +245,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={image ? () => setImage(null) : handleCapture}
-                    className="border-[3px] border-[#000000] bg-[#f8f5ee] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
+                    className="min-h-[44px] border-[3px] border-[#000000] bg-[#f8f5ee] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
                   >
                     {image ? "Retake" : "Capture"}
                   </button>
@@ -256,7 +256,7 @@ export default function Home() {
                   onChange={(event) => setTypedIngredients(event.target.value)}
                   rows={9}
                   placeholder="Paste a recipe or type ingredients: 2 eggs, 1 cup milk, butter..."
-                  className="min-h-[220px] w-full resize-none bg-transparent text-base font-black uppercase leading-7 tracking-[0.04em] outline-none placeholder:text-[#474238]/40"
+                  className="min-h-[220px] w-full resize-none bg-transparent text-base font-black uppercase leading-7 tracking-[0.04em] outline-none placeholder:text-[#474238]/75"
                 />
               )}
             </div>

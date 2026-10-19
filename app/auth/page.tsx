@@ -138,7 +138,10 @@ export default function AuthPage() {
             </h1>
             <p className="text-sm font-bold uppercase leading-6 tracking-[0.04em]">
               Sign in to save your vegan recipes and scans.{" "}
-              <Link href="/privacy" className="underline underline-offset-4">
+              <Link
+                href="/privacy"
+                className="inline-block py-2 underline underline-offset-4"
+              >
                 How we use your data
               </Link>
             </p>
@@ -202,7 +205,7 @@ export default function AuthPage() {
                 setMode(mode === "sign_in" ? "sign_up" : "sign_in");
                 setError("");
               }}
-              className="text-sm font-black uppercase underline tracking-[0.04em]"
+              className="min-h-[44px] text-sm font-black uppercase underline tracking-[0.04em]"
             >
               {mode === "sign_in"
                 ? "New here? Create an account"

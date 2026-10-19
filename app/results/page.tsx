@@ -251,9 +251,13 @@ export default function ResultsPage() {
               className={`min-h-[48px] border-[3px] border-[#000000] px-3 text-sm font-black uppercase tracking-[0.08em] transition-all ${
                 tab === key
                   ? "shadow-[4px_4px_0px_#000000]"
-                  : "opacity-50 shadow-none"
+                  : "shadow-none"
               }`}
-              style={{ backgroundColor: background, color: text }}
+              style={
+                tab === key
+                  ? { backgroundColor: background, color: text }
+                  : { backgroundColor: colors.base, color: colors.black }
+              }
             >
               {label}
             </button>

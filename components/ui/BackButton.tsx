@@ -21,7 +21,7 @@ export default function BackButton({ label = "Back", fallback = "/" }: Props) {
     <button
       type="button"
       onClick={goBack}
-      className="min-h-[40px] self-start border-2 border-[#000000] bg-[#DEE1E0] px-3 py-1 text-xs font-black uppercase tracking-[0.06em] shadow-[3px_3px_0_#000000] transition-all hover:translate-x-[1px] hover:translate-y-[1px]"
+      className="min-h-[44px] self-start border-2 border-[#000000] bg-[#DEE1E0] px-3 py-1 text-xs font-black uppercase tracking-[0.06em] shadow-[3px_3px_0_#000000] transition-all hover:translate-x-[1px] hover:translate-y-[1px]"
     >
       ← {label}
     </button>
