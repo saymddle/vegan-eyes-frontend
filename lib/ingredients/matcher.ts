@@ -122,11 +122,20 @@ const VEGAN_MARKERS = [
   "egg free", "eggless", "meat free", "meatless", "faux", "mock"
 ];
 
-function markedVegan(words: string[], start: number) {
+function markedVegan(words: string[], start: number, end: number) {
   const before = (count: number) =>
     start >= count ? words.slice(start - count, start).join(" ") : "";
-  return VEGAN_MARKERS.includes(before(1)) || VEGAN_MARKERS.includes(before(2));
+  return (
+    VEGAN_MARKERS.includes(before(1)) ||
+    VEGAN_MARKERS.includes(before(2)) ||
+    // "egg-free", "dairy free"
+    words[end] === "free"
+  );
 }
+
+// A word that only repeats what the ingredient before it already is, so
+// "cheddar cheese" is one swap and not "vegan cheddar vegan cheese".
+const REPEATED_NOUNS = new Set(["cheese", "cheeses"]);
 
 // Looks a phrase up as written, then with its last word made singular, so
 // "eggs" finds "egg" and "butter beans" finds "butter bean".
@@ -159,7 +168,7 @@ export function matchLine(line: string, index: IngredientIndex): LineMatch[] {
   if (whole) return [{ row: whole, words: named }];
 
   const used = new Array<boolean>(words.length).fill(false);
-  const found: LineMatch[] = [];
+  const found: (LineMatch & { start: number })[] = [];
 
   for (let size = Math.min(index.maxWords, words.length); size > 0; size--) {
     for (let start = 0; start + size <= words.length; start++) {
@@ -169,16 +178,33 @@ export function matchLine(line: string, index: IngredientIndex): LineMatch[] {
       if (!row) continue;
       // Skip "butter" in "vegan butter", but keep the words used so a
       // shorter phrase inside it is not matched either.
-      if (markedVegan(words, start)) {
-        used.fill(true, start, start + size);
+      if (markedVegan(words, start, start + size)) {
+        const end = start + size + (words[start + size] === "free" ? 1 : 0);
+        used.fill(true, start, end);
         continue;
       }
-      found.push({ row, words: phrase });
+      found.push({ row, words: phrase, start });
       used.fill(true, start, start + size);
     }
   }
 
-  return found;
+  // Fold "cheese" into the cheese just before it.
+  const kept = found.filter((match) => {
+    if (match.words.length !== 1 || !REPEATED_NOUNS.has(match.words[0])) {
+      return true;
+    }
+    const before = found.find(
+      (other) =>
+        other !== match &&
+        other.start + other.words.length === match.start &&
+        toStatus(other.row.vegan_status) !== "vegan"
+    );
+    if (!before) return true;
+    before.words = [...before.words, ...match.words];
+    return false;
+  });
+
+  return kept.map(({ row, words: matched }) => ({ row, words: matched }));
 }
 
 export function checkIngredients(
