@@ -5,15 +5,18 @@ import { colors } from "@/lib/theme/colors";
 type Props = {
   value: "scan" | "type";
   onChange: (val: "scan" | "type") => void;
+  // Marks it for the first-scan walkthrough.
+  tour?: string;
 };
 
-export default function NeoSwitch({ value, onChange }: Props) {
+export default function NeoSwitch({ value, onChange, tour }: Props) {
   const isScan = value === "scan";
 
   return (
     <div
+      data-tour={tour}
       onClick={() => onChange(isScan ? "type" : "scan")}
-      className="relative flex h-10 w-28 cursor-pointer items-center overflow-hidden rounded-full border-[3px] border-[#000000] transition-all"
+      className="relative flex h-10 w-28 shrink-0 cursor-pointer items-center overflow-hidden rounded-full border-[3px] border-[#000000] transition-all"
       style={{
         backgroundColor: isScan ? colors.primary : colors.secondary
       }}

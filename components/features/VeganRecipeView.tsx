@@ -331,7 +331,7 @@ export default function VeganRecipeView({
       {actions}
 
       {swaps.length > 0 ? (
-        <section className="flex flex-col gap-3">
+        <section data-tour="swaps" className="flex flex-col gap-3">
           <h2 className="text-sm font-black uppercase tracking-[0.06em]">
             Swaps
           </h2>

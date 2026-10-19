@@ -1,18 +1,32 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Webcam from "react-webcam";
+import Walkthrough, {
+  type WalkthroughStep
+} from "@/components/features/Walkthrough";
 import WelcomeCard from "@/components/features/WelcomeCard";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoSwitch from "@/components/ui/NeoSwitch";
 import NeoWindow from "@/components/ui/NeoWindow";
+import { INTRO_SEEN, SCAN_TOUR_SEEN, hasFlag } from "@/lib/onboarding/flags";
 import { storeScanInput } from "@/lib/store/recipeInput";
 import { colors } from "@/lib/theme/colors";
 import type { Ingredient } from "@/lib/utils/ocrIngredients";
 
 // The scan heading alternates between these, 5 seconds each.
 const messages = ["SCAN AN INGREDIENT", "CONVERT A RECIPE"];
+
+// Filled in by "Try a sample recipe" in the first-scan walkthrough.
+const SAMPLE_RECIPE = `Fluffy Pancakes
+1 cup flour
+1 tbsp sugar
+2 tsp baking powder
+1 cup milk
+1 egg
+2 tbsp melted butter
+Honey, to serve`;
 
 export default function Home() {
   const router = useRouter();
@@ -28,6 +42,48 @@ export default function Home() {
   const [rawText, setRawText] = useState<string>("");
   const [scanError, setScanError] = useState("");
   const [showHelp, setShowHelp] = useState(false);
+  // First visit goes to the intro; null until checked in the browser.
+  const [introSeen, setIntroSeen] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const seen = hasFlag(INTRO_SEEN);
+    setIntroSeen(seen);
+    if (!seen) router.replace("/welcome");
+  }, [router]);
+
+  const tourSteps = useMemo<WalkthroughStep[]>(
+    () => [
+      {
+        target: "mode-switch",
+        title: "Scan or type",
+        body: "Scan takes a photo of a recipe or food label. Type lets you paste a recipe from a website."
+      },
+      {
+        target: "scan-input",
+        title: "Add your recipe",
+        body: "Point your camera and tap Capture, or paste the recipe here. No recipe handy?",
+        extra: (
+          <button
+            type="button"
+            onClick={() => {
+              setMode("type");
+              setTypedIngredients(SAMPLE_RECIPE);
+            }}
+            className="min-h-[44px] w-full border-[3px] border-[#000000] px-3 text-xs font-black uppercase tracking-[0.08em]"
+            style={{ backgroundColor: colors.secondary, color: colors.black }}
+          >
+            Try a sample recipe
+          </button>
+        )
+      },
+      {
+        target: "analyze",
+        title: "Tap Analyze",
+        body: "Vegan Eyes finds every animal ingredient and gives you a plant-based version of the recipe."
+      }
+    ],
+    []
+  );
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -109,8 +165,16 @@ export default function Home() {
     await handleScan(image);
   };
 
+  // Keeps the camera off until we know this isn't a first visit.
+  if (!introSeen) {
+    return (
+      <main className="app-shell" style={{ backgroundColor: colors.primary }} />
+    );
+  }
+
   return (
     <main className="app-shell" style={{ backgroundColor: colors.primary }}>
+      <Walkthrough steps={tourSteps} storageKey={SCAN_TOUR_SEEN} />
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <NeoWindow
           title="Scan"
@@ -137,7 +201,7 @@ export default function Home() {
             {showHelp ? (
               <WelcomeCard onClose={() => setShowHelp(false)} />
             ) : null}
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-wrap items-end justify-between gap-4">
               <div className="flex h-[80px] max-w-[260px] items-end">
                 <h1
                   className={`text-4xl font-black uppercase leading-tight tracking-[-0.05em] transition-opacity duration-200 ${
@@ -147,10 +211,11 @@ export default function Home() {
                   {messages[index]}
                 </h1>
               </div>
-              <NeoSwitch value={mode} onChange={setMode} />
+              <NeoSwitch value={mode} onChange={setMode} tour="mode-switch" />
             </div>
 
             <div
+              data-tour="scan-input"
               className="border-[3px] border-[#000000] p-4 shadow-[8px_8px_0px_#000000]"
               style={{
                 backgroundColor: colors.white,
@@ -234,14 +299,16 @@ export default function Home() {
               </NeoWindow>
             ) : null}
 
-            <NeoButton
-              onClick={handleAnalyze}
-              disabled={isLoading || loading}
-              tone="secondary"
-              className="w-full"
-            >
-              {loading ? "Analyzing..." : "Analyze"}
-            </NeoButton>
+            <div data-tour="analyze">
+              <NeoButton
+                onClick={handleAnalyze}
+                disabled={isLoading || loading}
+                tone="secondary"
+                className="w-full"
+              >
+                {loading ? "Analyzing..." : "Analyze"}
+              </NeoButton>
+            </div>
           </div>
         </NeoWindow>
       </div>

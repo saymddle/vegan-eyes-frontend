@@ -249,7 +249,7 @@ export default function VeganVersion() {
           onChoose={handleChoose}
           onReport={handleReport}
           actions={
-            <div className="flex flex-col gap-3">
+            <div data-tour="save" className="flex flex-col gap-3">
               {savedId ? (
                 <NeoButton
                   href={`/library/recipes/${savedId}`}
