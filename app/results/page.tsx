@@ -4,12 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import IngredientCard from "@/components/features/IngredientCard";
 import VeganVersion from "@/components/features/VeganVersion";
+import Walkthrough, {
+  type WalkthroughStep
+} from "@/components/features/Walkthrough";
 import BackButton from "@/components/ui/BackButton";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { checkIngredients } from "@/lib/api/check";
 import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
 import { saveScan } from "@/lib/api/saveScan";
+import { RESULTS_TOUR_SEEN } from "@/lib/onboarding/flags";
 import { colors } from "@/lib/theme/colors";
 import type { UIResult, UIStatus } from "@/lib/types/result";
 import {
@@ -33,6 +37,30 @@ const statusCopy: Record<UIStatus, { title: string; body: string }> = {
     body: "This result contains ambiguous ingredients that need source checks."
   }
 };
+
+// The second half of the first-scan walkthrough.
+const tourSteps: WalkthroughStep[] = [
+  {
+    target: "verdict",
+    title: "Your verdict",
+    body: "This tells you at a glance whether the recipe was already vegan."
+  },
+  {
+    target: "version-tabs",
+    title: "Original or vegan",
+    body: "Original shows the animal ingredients in red. Vegan shows your converted recipe."
+  },
+  {
+    target: "swaps",
+    title: "Change a swap",
+    body: "Tap any swap to pick another option or keep the original ingredient."
+  },
+  {
+    target: "save",
+    title: "Save and share",
+    body: "Save the recipe to your Library (you'll need to sign in), or copy, share or print it."
+  }
+];
 
 export default function ResultsPage() {
   const router = useRouter();
@@ -178,8 +206,14 @@ export default function ResultsPage() {
       ) : null}
 
       <div className="relative z-10 mx-auto flex max-w-[500px] flex-col gap-6">
+        <Walkthrough
+          steps={tourSteps}
+          storageKey={RESULTS_TOUR_SEEN}
+          waitFor="save"
+        />
         <BackButton label="Scan" />
         <div
+          data-tour="verdict"
           className={`transition-all duration-300 ease-out ${
             focusedIngredient ? "opacity-60 blur-[1px]" : "opacity-100"
           }`}
@@ -197,6 +231,7 @@ export default function ResultsPage() {
         </div>
 
         <div
+          data-tour="version-tabs"
           className="grid grid-cols-2 gap-3"
           role="tablist"
           aria-label="Recipe version"

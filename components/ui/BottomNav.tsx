@@ -14,6 +14,9 @@ const navItems = [
 export default function BottomNav() {
   const pathname = usePathname();
 
+  // The intro has its own buttons.
+  if (pathname === "/welcome") return null;
+
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4">
       <NeoWindow variant="maybe" size="sm" className="mx-auto max-w-[500px]">
