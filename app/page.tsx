@@ -12,6 +12,7 @@ import NeoSwitch from "@/components/ui/NeoSwitch";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { INTRO_SEEN, SCAN_TOUR_SEEN, hasFlag } from "@/lib/onboarding/flags";
 import { storeScanInput } from "@/lib/store/recipeInput";
+import { readUpload } from "@/lib/utils/readUpload";
 import { colors } from "@/lib/theme/colors";
 import type { Ingredient } from "@/lib/utils/ocrIngredients";
 
@@ -39,6 +40,11 @@ export default function Home() {
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [image, setImage] = useState<string | null>(null);
+  // A recipe PDF picked with Upload; photos go in `image`.
+  const [pdf, setPdf] = useState<{ name: string; dataUrl: string } | null>(
+    null
+  );
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [rawText, setRawText] = useState<string>("");
   const [scanError, setScanError] = useState("");
   const [showHelp, setShowHelp] = useState(false);
@@ -61,7 +67,7 @@ export default function Home() {
       {
         target: "scan-input",
         title: "Add your recipe",
-        body: "Point your camera and tap Capture, or paste the recipe here. No recipe handy?",
+        body: "Tap Capture to take a photo, Upload to pick a photo or PDF, or switch to Type and paste. No recipe handy?",
         extra: (
           <button
             type="button"
@@ -115,7 +121,36 @@ export default function Home() {
     setImage(screenshot);
   };
 
-  async function handleScan(imageBase64: string) {
+  async function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setScanError("");
+    try {
+      const upload = await readUpload(file);
+      if (upload.kind === "pdf") {
+        setPdf({ name: upload.name, dataUrl: upload.dataUrl });
+        setImage(null);
+      } else {
+        setImage(upload.dataUrl);
+        setPdf(null);
+      }
+    } catch (error) {
+      setScanError(
+        error instanceof Error ? error.message : "Couldn't open that file."
+      );
+    }
+  }
+
+  function clearPicture() {
+    setImage(null);
+    setPdf(null);
+  }
+
+  async function handleScan(
+    payload: { imageBase64: string } | { pdfBase64: string }
+  ) {
     setLoading(true);
     setScanError("");
 
@@ -125,7 +160,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ imageBase64 })
+        body: JSON.stringify(payload)
       });
 
       const data = (await res.json()) as {
@@ -137,7 +172,11 @@ export default function Home() {
       setRawText(data.raw ?? "");
 
       if (!res.ok || !data.raw?.trim()) {
-        setScanError("Couldn't read any text. Try a closer, brighter photo.");
+        setScanError(
+          "pdfBase64" in payload
+            ? "Couldn't read any text in that PDF."
+            : "Couldn't read any text. Try a closer, brighter photo."
+        );
         return;
       }
 
@@ -158,11 +197,16 @@ export default function Home() {
       return;
     }
 
+    if (pdf) {
+      await handleScan({ pdfBase64: pdf.dataUrl });
+      return;
+    }
+
     if (!image) {
       return;
     }
 
-    await handleScan(image);
+    await handleScan({ imageBase64: image });
   };
 
   // Keeps the camera off until we know this isn't a first visit.
@@ -224,10 +268,19 @@ export default function Home() {
             >
               {mode === "scan" ? (
                 <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 text-center">
-                  {image ? (
+                  {pdf ? (
+                    <div className="flex min-h-[160px] w-full flex-col items-center justify-center gap-2 rounded border-[3px] border-[#000000] p-4">
+                      <span aria-hidden="true" className="text-5xl">
+                        📄
+                      </span>
+                      <span className="max-w-full break-all text-sm font-black">
+                        {pdf.name}
+                      </span>
+                    </div>
+                  ) : image ? (
                     <img
                       src={image}
-                      alt="Captured ingredient label"
+                      alt="Your recipe photo"
                       className="h-full max-h-[260px] w-full rounded border-[3px] border-[#000000] object-cover"
                     />
                   ) : (
@@ -242,13 +295,34 @@ export default function Home() {
                     />
                   )}
 
-                  <button
-                    type="button"
-                    onClick={image ? () => setImage(null) : handleCapture}
-                    className="min-h-[44px] border-[3px] border-[#000000] bg-[#f8f5ee] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
-                  >
-                    {image ? "Retake" : "Capture"}
-                  </button>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={image || pdf ? clearPicture : handleCapture}
+                      className="min-h-[44px] border-[3px] border-[#000000] bg-[#f8f5ee] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
+                    >
+                      {image || pdf ? "Retake" : "Capture"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="min-h-[44px] border-[3px] border-[#000000] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
+                      style={{
+                        backgroundColor: colors.secondary,
+                        color: colors.black
+                      }}
+                    >
+                      Upload
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={handleFile}
+                      className="hidden"
+                      aria-label="Upload a photo or PDF of a recipe"
+                    />
+                  </div>
                 </div>
               ) : (
                 <textarea

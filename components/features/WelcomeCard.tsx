@@ -4,7 +4,7 @@ import Link from "next/link";
 import { colors } from "@/lib/theme/colors";
 
 const steps = [
-  "Snap a photo of a recipe, or switch to Type and paste one.",
+  "Snap or upload a photo of a recipe (or a PDF), or switch to Type and paste one.",
   "Vegan Eyes swaps every animal ingredient for a plant-based one.",
   "Tap any swap to change it, then save the recipe to your Library."
 ];
