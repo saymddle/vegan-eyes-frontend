@@ -115,6 +115,19 @@ function singular(word: string) {
   return word;
 }
 
+// Words that mark the next ingredient as already plant-based: "vegan butter",
+// "plant-based milk", "dairy-free cheese".
+const VEGAN_MARKERS = [
+  "vegan", "plant based", "plantbased", "dairy free", "non dairy", "nondairy",
+  "egg free", "eggless", "meat free", "meatless", "faux", "mock"
+];
+
+function markedVegan(words: string[], start: number) {
+  const before = (count: number) =>
+    start >= count ? words.slice(start - count, start).join(" ") : "";
+  return VEGAN_MARKERS.includes(before(1)) || VEGAN_MARKERS.includes(before(2));
+}
+
 // Looks a phrase up as written, then with its last word made singular, so
 // "eggs" finds "egg" and "butter beans" finds "butter bean".
 function lookup(map: Map<string, IngredientRow>, words: string[]) {
@@ -154,6 +167,12 @@ export function matchLine(line: string, index: IngredientIndex): LineMatch[] {
       const phrase = words.slice(start, start + size);
       const row = lookup(index.terms, phrase);
       if (!row) continue;
+      // Skip "butter" in "vegan butter", but keep the words used so a
+      // shorter phrase inside it is not matched either.
+      if (markedVegan(words, start)) {
+        used.fill(true, start, start + size);
+        continue;
+      }
       found.push({ row, words: phrase });
       used.fill(true, start, start + size);
     }
