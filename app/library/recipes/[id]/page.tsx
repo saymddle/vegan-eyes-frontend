@@ -1,7 +1,8 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import ServingsControl from "@/components/features/ServingsControl";
 import VeganRecipeView, {
   veganRecipeText
 } from "@/components/features/VeganRecipeView";
@@ -14,6 +15,7 @@ import {
   type SavedRecipe
 } from "@/lib/api/recipes";
 import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
+import { findServings, scaleRecipe } from "@/lib/ingredients/scaleRecipe";
 import { colors } from "@/lib/theme/colors";
 import { shareText } from "@/lib/utils/share";
 
@@ -23,6 +25,11 @@ export default function RecipeDetailPage() {
   const [saved, setSaved] = useState<SavedRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notice, setNotice] = useState("");
+  const [factor, setFactor] = useState(1);
+  const recipe = useMemo(
+    () => (saved ? scaleRecipe(saved.recipe, factor) : null),
+    [saved, factor]
+  );
 
   useEffect(() => {
     let isActive = true;
@@ -59,7 +66,7 @@ export default function RecipeDetailPage() {
     if (!saved) return;
 
     try {
-      await navigator.clipboard.writeText(veganRecipeText(saved.recipe));
+      await navigator.clipboard.writeText(veganRecipeText(recipe ?? saved.recipe));
       flash("Copied");
     } catch {
       flash("Copy failed. Select the text and copy it instead.");
@@ -73,7 +80,7 @@ export default function RecipeDetailPage() {
 
   async function handleShare() {
     if (!saved) return;
-    const result = await shareText(saved.title, veganRecipeText(saved.recipe));
+    const result = await shareText(saved.title, veganRecipeText(recipe ?? saved.recipe));
     if (result === "copied") flash("Copied to share");
     if (result === "failed") flash("Sharing isn't available here.");
   }
@@ -131,7 +138,14 @@ export default function RecipeDetailPage() {
         {!isLoading && saved ? (
           <>
             <VeganRecipeView
-              recipe={{ ...saved.recipe, title: saved.title }}
+              recipe={{ ...(recipe ?? saved.recipe), title: saved.title }}
+              servings={
+                <ServingsControl
+                  base={findServings(saved.recipe)}
+                  factor={factor}
+                  onChange={setFactor}
+                />
+              }
               subtitle={`Saved ${new Date(saved.createdAt).toLocaleDateString()}`}
               actions={
                 <div className="flex flex-col gap-3">

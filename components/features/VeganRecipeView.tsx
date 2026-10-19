@@ -76,6 +76,8 @@ type Props = {
   // The cook's picks. Without onChoose the swaps are read-only.
   choices?: SwapChoices;
   onChoose?: (swap: number, choice: SwapChoice | undefined) => void;
+  // A servings or batch-size control, shown under the verdict.
+  servings?: ReactNode;
   // Hides the Vegan/Original switch when the page has its own tabs.
   hideVersionToggle?: boolean;
   // Buttons placed right under the recipe, above the swap details.
@@ -217,6 +219,7 @@ export default function VeganRecipeView({
   onChoose,
   actions,
   onReport,
+  servings,
   hideVersionToggle = false
 }: Props) {
   const [showOriginal, setShowOriginal] = useState(false);
@@ -254,6 +257,7 @@ export default function VeganRecipeView({
               {subtitle}
             </p>
           ) : null}
+          {servings}
         </div>
 
         <div className="p-4">

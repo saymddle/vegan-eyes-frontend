@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import ServingsControl from "@/components/features/ServingsControl";
 import VeganRecipeView, {
   veganRecipeText,
   veganRecipeTitle
@@ -16,6 +17,7 @@ import {
   type SwapChoice,
   type SwapChoices
 } from "@/lib/ingredients/swapChoices";
+import { findServings, scaleRecipe } from "@/lib/ingredients/scaleRecipe";
 import type { VeganizedRecipe } from "@/lib/ingredients/veganize";
 import { RECIPE_STORAGE_KEY, readRecipeSource } from "@/lib/store/recipeInput";
 import { colors } from "@/lib/theme/colors";
@@ -28,16 +30,25 @@ export default function VeganVersion() {
   const [source, setSource] = useState("");
   const [converted, setConverted] = useState<VeganizedRecipe | null>(null);
   const [choices, setChoices] = useState<SwapChoices>({});
+  const [factor, setFactor] = useState(1);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // What is shown, copied and saved: the conversion with the cook's picks.
+  // What is shown, copied and saved: the conversion with the cook's picks,
+  // scaled to the servings they want.
   const recipe = useMemo(
-    () => (converted ? applySwapChoices(converted, choices) : null),
-    [converted, choices]
+    () =>
+      converted
+        ? scaleRecipe(applySwapChoices(converted, choices), factor)
+        : null,
+    [converted, choices, factor]
+  );
+  const baseServings = useMemo(
+    () => (converted ? findServings(converted) : null),
+    [converted]
   );
 
   const convert = useCallback(async (isActive: () => boolean) => {
@@ -69,6 +80,7 @@ export default function VeganVersion() {
       if (isActive()) {
         setConverted(data);
         setChoices({});
+        setFactor(1);
       }
     } catch (requestError) {
       if (isActive()) {
@@ -248,6 +260,16 @@ export default function VeganVersion() {
           choices={choices}
           onChoose={handleChoose}
           onReport={handleReport}
+          servings={
+            <ServingsControl
+              base={baseServings}
+              factor={factor}
+              onChange={(next) => {
+                setFactor(next);
+                setSavedId(null);
+              }}
+            />
+          }
           actions={
             <div className="flex flex-col gap-3">
               {savedId ? (
