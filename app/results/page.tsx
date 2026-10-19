@@ -203,8 +203,8 @@ export default function ResultsPage() {
         >
           {(
             [
-              ["vegan", "Vegan", colors.primary, colors.white],
-              ["original", "Original", colors.secondary, colors.black]
+              ["original", "Original", colors.secondary, colors.black],
+              ["vegan", "Vegan", colors.primary, colors.white]
             ] as const
           ).map(([key, label, background, text]) => (
             <button
