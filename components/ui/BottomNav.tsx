@@ -16,12 +16,8 @@ export default function BottomNav() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4">
-      <NeoWindow
-        variant="maybe"
-        size="sm"
-        className="mx-auto max-w-[500px]"
-      >
-        <nav className="grid grid-cols-4 gap-2">
+      <NeoWindow variant="maybe" size="sm" className="mx-auto max-w-[500px]">
+        <nav className="grid grid-cols-4 gap-1 min-[360px]:gap-2">
           {navItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -35,7 +31,7 @@ export default function BottomNav() {
                 key={item.href}
                 href={item.href}
                 tone={isActive ? "primary" : "base"}
-                className="px-2 py-3 text-xs"
+                className="min-w-0 px-0! py-3 text-[9px] tracking-normal! min-[360px]:text-[10px] min-[360px]:tracking-[0.02em]! min-[400px]:text-xs min-[400px]:tracking-[0.04em]!"
               >
                 {item.label}
               </NeoButton>

@@ -21,7 +21,7 @@ export default function WelcomeCard({ onClose }: Props) {
       style={{ backgroundColor: colors.white, color: colors.black }}
     >
       <h2 className="text-lg font-black uppercase tracking-[0.02em]">
-        Make any recipe vegan
+        Veganize your recipe
       </h2>
       <ol className="mt-3 flex flex-col gap-2 text-sm font-bold">
         {steps.map((step, i) => (

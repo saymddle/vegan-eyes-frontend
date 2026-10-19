@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import IngredientCard from "@/components/features/IngredientCard";
+import VeganVersion from "@/components/features/VeganVersion";
 import BackButton from "@/components/ui/BackButton";
 import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
@@ -43,6 +44,7 @@ export default function ResultsPage() {
   const [focusedIngredient, setFocusedIngredient] = useState<string | null>(
     null
   );
+  const [tab, setTab] = useState<"vegan" | "original">("vegan");
 
   useEffect(() => {
     let isActive = true;
@@ -164,7 +166,7 @@ export default function ResultsPage() {
     }
   }
 
-  const mainVariant = error ? "not_vegan" : result?.status ?? "maybe";
+  const mainVariant = error ? "not_vegan" : (result?.status ?? "maybe");
 
   return (
     <main className="app-shell" style={{ backgroundColor: colors.base }}>
@@ -176,7 +178,7 @@ export default function ResultsPage() {
       ) : null}
 
       <div className="relative z-10 mx-auto flex max-w-[500px] flex-col gap-6">
-        <BackButton fallback="/convert" />
+        <BackButton label="Scan" />
         <div
           className={`transition-all duration-300 ease-out ${
             focusedIngredient ? "opacity-60 blur-[1px]" : "opacity-100"
@@ -192,6 +194,39 @@ export default function ResultsPage() {
               </p>
             </div>
           </NeoWindow>
+        </div>
+
+        <div
+          className="grid grid-cols-2 gap-3"
+          role="tablist"
+          aria-label="Recipe version"
+        >
+          {(
+            [
+              ["original", "Original", colors.secondary, colors.black],
+              ["vegan", "Vegan", colors.primary, colors.white]
+            ] as const
+          ).map(([key, label, background, text]) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={tab === key}
+              onClick={() => setTab(key)}
+              className={`min-h-[48px] border-[3px] border-[#000000] px-3 text-sm font-black uppercase tracking-[0.08em] transition-all ${
+                tab === key
+                  ? "shadow-[4px_4px_0px_#000000]"
+                  : "opacity-50 shadow-none"
+              }`}
+              style={{ backgroundColor: background, color: text }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className={tab === "vegan" ? "" : "hidden"} role="tabpanel">
+          <VeganVersion />
         </div>
 
         {isLoading ? (
@@ -210,9 +245,9 @@ export default function ResultsPage() {
           </NeoWindow>
         ) : null}
 
-        {!isLoading && !error && result ? (
+        {tab === "original" && !isLoading && !error && result ? (
           <NeoWindow
-            title="Highlighted Input"
+            title="Original Recipe"
             variant={result.status}
             size="md"
             className={focusedIngredient ? "relative z-20" : ""}
