@@ -239,7 +239,7 @@ export default function VeganRecipeView({
   return (
     <>
       <section
-        className="border-[3px] border-[#000000] shadow-[8px_8px_0px_#000000]"
+        className="print-recipe border-[3px] border-[#000000] shadow-[8px_8px_0px_#000000]"
         style={{ backgroundColor: colors.white, color: colors.black }}
       >
         <div className="border-b-[3px] border-[#000000] p-4">
@@ -322,6 +322,9 @@ export default function VeganRecipeView({
               )
             )}
           </div>
+          <p className="mt-6 hidden text-xs font-bold uppercase tracking-[0.04em] print:block">
+            Made vegan with Vegan Eyes
+          </p>
         </div>
       </section>
 

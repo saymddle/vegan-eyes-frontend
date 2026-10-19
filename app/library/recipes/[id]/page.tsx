@@ -135,7 +135,7 @@ export default function RecipeDetailPage() {
               subtitle={`Saved ${new Date(saved.createdAt).toLocaleDateString()}`}
               actions={
                 <div className="flex flex-col gap-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <NeoButton onClick={handleCopy} className="text-sm">
                       Copy
                     </NeoButton>
@@ -145,6 +145,13 @@ export default function RecipeDetailPage() {
                       className="text-sm"
                     >
                       Share
+                    </NeoButton>
+                    <NeoButton
+                      onClick={() => window.print()}
+                      tone="base"
+                      className="text-sm"
+                    >
+                      Print
                     </NeoButton>
                   </div>
                   <p

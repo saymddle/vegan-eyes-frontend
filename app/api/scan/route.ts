@@ -26,9 +26,6 @@ export async function POST(req: Request) {
 
   const ingredients = processOCRIngredients(text);
 
-  console.log("OCR RAW:", text);
-  console.log("PARSED:", ingredients);
-
   return Response.json({
     success: true,
     raw: text,
