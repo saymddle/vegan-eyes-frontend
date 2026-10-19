@@ -18,13 +18,7 @@ const NOT_CAUGHT_YET = new Set([
   "cultured dairy"
 ]);
 
-const WRONGLY_FLAGGED_YET = new Set([
-  // "egg" is caught before the "-free" that follows it.
-  "egg-free",
-  // "cream" and "fish" are caught inside a vegan name.
-  "rice cream",
-  "fish pepper"
-]);
+const WRONGLY_FLAGGED_YET = new Set<string>([]);
 
 describe("non-vegan ingredients are flagged", () => {
   for (const item of splitList(NON_VEGAN)) {

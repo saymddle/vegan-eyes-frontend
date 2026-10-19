@@ -41,13 +41,15 @@ const cases: Case[] = [
   {
     file: "03-one-line.txt",
     status: "non_vegan",
-    swapped: ["Egg", "Milk", "Butter", "Cheddar", "Cheese"],
+    swapped: ["Egg", "Milk", "Butter", "Cheddar", "Bacon"],
     has: [
       "whisk 3 flax eggs",
       "2 tbsp unsweetened oat milk",
-      "1 tbsp vegan butter"
+      "1 tbsp vegan butter",
+      "crumbled tempeh bacon"
     ],
-    lacks: ["3 eggs", "2 tbsp milk"]
+    // "cheddar cheese" is one swap, not "vegan cheddar vegan cheese".
+    lacks: ["3 eggs", "2 tbsp milk", "crumbled bacon", "vegan cheese"]
   },
   {
     file: "04-already-vegan.txt",
@@ -84,7 +86,6 @@ const cases: Case[] = [
       "Beef",
       "Cotechino",
       "Ricotta",
-      "Cheese",
       "Egg",
       "Mozzarella",
       "Parmesan",
@@ -93,10 +94,11 @@ const cases: Case[] = [
     ],
     has: [
       "1 lb plant-based mince",
+      "15 oz tofu ricotta",
       "2 cups vegan mozzarella",
       "1/2 cup vegan parmesan"
     ],
-    lacks: ["ground beef"]
+    lacks: ["ground beef", "vegan cheese"]
   },
   {
     file: "08-panna-cotta.txt",
@@ -120,9 +122,14 @@ const cases: Case[] = [
   {
     file: "11-several-per-line.txt",
     status: "non_vegan",
-    swapped: ["Egg", "Cheese", "Sour Cream"],
-    has: ["6 flax eggs", "1 cup vegan cheese", "1/2 cup vegan sour cream"],
-    lacks: ["6 eggs", "shredded cheese"]
+    swapped: ["Egg", "Cheese", "Bacon", "Sour Cream"],
+    has: [
+      "6 flax eggs",
+      "1 cup vegan cheese",
+      "4 slices tempeh bacon",
+      "1/2 cup vegan sour cream"
+    ],
+    lacks: ["6 eggs", "shredded cheese", "slices bacon"]
   },
   {
     file: "12-fish-tacos.txt",
@@ -169,27 +176,6 @@ describe("recipes convert to vegan", () => {
       });
     });
   }
-});
-
-// Known bugs. These run as expected failures; when one is fixed its test
-// turns red and says to move it into the cases above.
-describe("known bugs", () => {
-  it.fails("swaps bacon inside a recipe line", () => {
-    expect(veganText("03-one-line.txt")).not.toContain("crumbled bacon");
-    expect(veganText("11-several-per-line.txt")).not.toContain("slices bacon");
-  });
-
-  it.fails("treats 'cheddar cheese' as one ingredient", () => {
-    expect(veganText("03-one-line.txt")).not.toContain(
-      "vegan cheddar vegan cheese"
-    );
-  });
-
-  it.fails("treats 'ricotta cheese' as one ingredient", () => {
-    expect(veganText("07-lasagna.txt")).not.toContain(
-      "tofu ricotta vegan cheese"
-    );
-  });
 });
 
 describe("the cook's swap choices", () => {

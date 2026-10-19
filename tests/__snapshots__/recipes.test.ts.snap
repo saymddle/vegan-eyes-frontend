@@ -29,7 +29,7 @@ Stir in the flour and baking soda, then fold in the chocolate chips.
 Bake at 350°F for 10 to 12 minutes."
 `;
 
-exports[`recipes convert to vegan > 03-one-line.txt > matches the saved vegan version 1`] = `"Quick scramble: whisk 3 flax eggs (3 tbsp ground flaxseed + 9 tbsp water, rested 5 min) with 2 tbsp unsweetened oat milk, melt 1 tbsp vegan butter in a pan, add the flax eggs and top with vegan cheddar vegan cheese and crumbled bacon."`;
+exports[`recipes convert to vegan > 03-one-line.txt > matches the saved vegan version 1`] = `"Quick scramble: whisk 3 flax eggs (3 tbsp ground flaxseed + 9 tbsp water, rested 5 min) with 2 tbsp unsweetened oat milk, melt 1 tbsp vegan butter in a pan, add the flax eggs and top with vegan cheddar and crumbled tempeh bacon."`;
 
 exports[`recipes convert to vegan > 04-already-vegan.txt > matches the saved vegan version 1`] = `
 "Red Lentil Soup
@@ -71,7 +71,7 @@ exports[`recipes convert to vegan > 07-lasagna.txt > matches the saved vegan ver
 "Classic Lasagna
 1 lb plant-based mince
 1 lb vegan seitan sausage
-15 oz tofu ricotta vegan cheese
+15 oz tofu ricotta
 1 flax egg (1 tbsp ground flaxseed + 3 tbsp water, rested 5 min)
 2 cups vegan mozzarella
 1/2 cup vegan parmesan
@@ -110,7 +110,7 @@ exports[`recipes convert to vegan > 10-false-friends.txt > matches the saved veg
 
 exports[`recipes convert to vegan > 11-several-per-line.txt > matches the saved vegan version 1`] = `
 "Breakfast Burritos
-4 tortillas, 6 flax eggs (6 tbsp ground flaxseed + 18 tbsp water, rested 5 min), 1 cup vegan cheese, 4 slices bacon
+4 tortillas, 6 flax eggs (6 tbsp ground flaxseed + 18 tbsp water, rested 5 min), 1 cup vegan cheese, 4 slices tempeh bacon
 1/2 cup vegan sour cream and salsa to serve"
 `;
 

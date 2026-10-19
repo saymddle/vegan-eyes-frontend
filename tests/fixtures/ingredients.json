@@ -2707,7 +2707,14 @@
     {"name": "vanilla extract", "vegan_status": "vegan", "lab_note": "Alcoholic extract of vanilla beans.", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": "vanilla,natural vanilla"},
     {"name": "Hummus", "vegan_status": "vegan", "lab_note": "Chickpea dip (usually vegan)", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": "Houmous"},
     {"name": "Crab", "vegan_status": "non_vegan", "lab_note": "Shellfish", "swap_static": "Hearts of palm or jackfruit", "swap_functional": null, "is_complex": true, "aliases": null},
-    {"name": "Peach", "vegan_status": "vegan", "lab_note": "Stone fruit", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": "Prunus persica"}
+    {"name": "Peach", "vegan_status": "vegan", "lab_note": "Stone fruit", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": "Prunus persica"},
+    {"name": "Bacon", "vegan_status": "non_vegan", "lab_note": "Cured pork belly", "swap_static": "Tempeh bacon", "swap_functional": "Smoked coconut flakes", "is_complex": false, "aliases": null},
+    {"name": "Tempeh Bacon", "vegan_status": "vegan", "lab_note": "Marinated, smoked tempeh strips", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
+    {"name": "Coconut Bacon", "vegan_status": "vegan", "lab_note": "Smoked, seasoned coconut flakes", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
+    {"name": "Mushroom Bacon", "vegan_status": "vegan", "lab_note": "Crisp smoked mushroom strips", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
+    {"name": "Rice Paper Bacon", "vegan_status": "vegan", "lab_note": "Marinated, baked rice paper strips", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
+    {"name": "Fish Pepper", "vegan_status": "vegan", "lab_note": "A chili pepper variety", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
+    {"name": "Rice Cream", "vegan_status": "vegan", "lab_note": "Hot cereal made from ground rice", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null}
   ],
   "synonyms": [
     {"alias": "Animal Fat", "ingredient_name": "Lard"},
