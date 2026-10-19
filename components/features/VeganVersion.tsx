@@ -267,7 +267,7 @@ export default function VeganVersion() {
                   {isSaving ? "Saving..." : "Save Recipe"}
                 </NeoButton>
               )}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <NeoButton onClick={handleCopy} tone="base" className="text-xs">
                   Copy
                 </NeoButton>
@@ -277,6 +277,13 @@ export default function VeganVersion() {
                   className="text-xs"
                 >
                   Share
+                </NeoButton>
+                <NeoButton
+                  onClick={() => window.print()}
+                  tone="base"
+                  className="text-xs"
+                >
+                  Print
                 </NeoButton>
               </div>
               <p

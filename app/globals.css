@@ -78,3 +78,26 @@ body {
 .ingredient.high {
   border: 1px solid green;
 }
+
+/* Printing a recipe prints only the recipe card. */
+@media print {
+  body *:not(:has(.print-recipe)):not(.print-recipe):not(.print-recipe *) {
+    display: none !important;
+  }
+  html,
+  body,
+  .app-shell {
+    min-height: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+  .print-recipe {
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .print-recipe button {
+    background: none !important;
+    text-decoration: none !important;
+    padding: 0 !important;
+  }
+}
