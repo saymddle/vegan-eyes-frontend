@@ -51,8 +51,8 @@ export function highlightIngredients(
       regex,
       `<span data-ingredient="${escapeHtml(item.name)}" class="inline-block px-1 font-bold cursor-pointer underline transition-all duration-200 ease-out ${
         focusedIngredient === item.name
-          ? "ring-2 ring-[#000000] scale-105 opacity-100"
-          : "opacity-80"
+          ? "ring-2 ring-[#000000] scale-105"
+          : ""
       }" style="${style}">$1</span>`
     );
   });

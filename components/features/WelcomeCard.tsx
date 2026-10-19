@@ -41,14 +41,14 @@ export default function WelcomeCard({ onClose }: Props) {
         <button
           type="button"
           onClick={onClose}
-          className="min-h-[40px] border-2 border-[#000000] px-4 text-xs font-black uppercase tracking-[0.06em]"
+          className="min-h-[44px] border-2 border-[#000000] px-4 text-xs font-black uppercase tracking-[0.06em]"
           style={{ backgroundColor: colors.black, color: colors.white }}
         >
           Close
         </button>
         <Link
           href="/welcome"
-          className="text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
+          className="inline-flex min-h-[44px] items-center text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
         >
           Replay the intro
         </Link>

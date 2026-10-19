@@ -158,7 +158,7 @@ export default function WelcomePage() {
           ))}
         </div>
 
-        <div className="flex justify-center gap-3" role="tablist">
+        <div className="flex justify-center gap-1" role="tablist">
           {slides.map((slide, i) => (
             <button
               key={slide.label}
@@ -167,7 +167,7 @@ export default function WelcomePage() {
               aria-selected={i === index}
               aria-label={`Go to ${slide.label}`}
               onClick={() => goTo(i)}
-              className="flex h-11 w-8 items-center justify-center"
+              className="flex h-11 w-11 items-center justify-center"
             >
               <span
                 className={`block h-3 border-2 border-[#000000] transition-all ${

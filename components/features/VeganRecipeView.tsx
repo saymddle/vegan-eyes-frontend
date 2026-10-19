@@ -89,7 +89,7 @@ type Props = {
 };
 
 const chip =
-  "border-2 border-[#000000] px-2 py-1 text-xs font-black uppercase tracking-[0.04em] min-h-[36px]";
+  "border-2 border-[#000000] px-2 py-1 text-xs font-black uppercase tracking-[0.04em] min-h-[44px]";
 
 function ChoiceChip({
   label,
@@ -272,7 +272,7 @@ export default function VeganRecipeView({
                 type="button"
                 onClick={() => setShowOriginal(original)}
                 aria-pressed={showOriginal === original}
-                className="min-h-[36px] px-3 text-xs font-black uppercase tracking-[0.06em]"
+                className="min-h-[44px] px-3 text-xs font-black uppercase tracking-[0.06em]"
                 style={{
                   backgroundColor:
                     showOriginal === original ? colors.black : colors.white,

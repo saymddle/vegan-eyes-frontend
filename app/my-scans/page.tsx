@@ -96,13 +96,25 @@ export default function MyScansPage() {
             />
 
             <div className="grid grid-cols-3 gap-3">
-              <NeoButton href="/library/recent" tone="secondary">
+              <NeoButton
+                href="/library/recent"
+                tone="secondary"
+                className="min-h-[44px] min-w-0 px-1! text-[11px] tracking-normal! min-[400px]:px-4! min-[400px]:text-sm min-[400px]:tracking-[0.08em]!"
+              >
                 Recent
               </NeoButton>
-              <NeoButton href="/library/recipes" tone="base">
+              <NeoButton
+                href="/library/recipes"
+                tone="base"
+                className="min-h-[44px] min-w-0 px-1! text-[11px] tracking-normal! min-[400px]:px-4! min-[400px]:text-sm min-[400px]:tracking-[0.08em]!"
+              >
                 Recipes
               </NeoButton>
-              <NeoButton href="/library/deeper" tone="base">
+              <NeoButton
+                href="/library/deeper"
+                tone="base"
+                className="min-h-[44px] min-w-0 px-1! text-[11px] tracking-normal! min-[400px]:px-4! min-[400px]:text-sm min-[400px]:tracking-[0.08em]!"
+              >
                 Deeper
               </NeoButton>
             </div>

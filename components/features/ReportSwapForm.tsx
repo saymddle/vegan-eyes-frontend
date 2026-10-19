@@ -48,7 +48,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mx-3 mb-3 min-h-[32px] text-xs font-black uppercase tracking-[0.04em] underline underline-offset-4"
+        className="mx-3 mb-3 min-h-[44px] text-xs font-black uppercase tracking-[0.04em] underline underline-offset-4"
       >
         Report a wrong swap
       </button>
@@ -66,7 +66,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
       {reasons.map((option) => (
         <label
           key={option.value}
-          className="flex min-h-[32px] items-center gap-2 text-sm"
+          className="flex min-h-[44px] items-center gap-2 text-sm"
         >
           <input
             type="radio"
@@ -98,7 +98,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
           type="button"
           onClick={submit}
           disabled={state === "sending"}
-          className="min-h-[36px] border-2 border-[#000000] px-3 text-xs font-black uppercase tracking-[0.04em]"
+          className="min-h-[44px] border-2 border-[#000000] px-3 text-xs font-black uppercase tracking-[0.04em]"
           style={{ backgroundColor: colors.black, color: colors.white }}
         >
           {state === "sending" ? "Sending..." : "Send report"}
@@ -106,7 +106,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="min-h-[36px] px-3 text-xs font-black uppercase tracking-[0.04em] underline underline-offset-4"
+          className="min-h-[44px] px-3 text-xs font-black uppercase tracking-[0.04em] underline underline-offset-4"
         >
           Cancel
         </button>

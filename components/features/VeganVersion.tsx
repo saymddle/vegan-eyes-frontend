@@ -268,20 +268,24 @@ export default function VeganVersion() {
                 </NeoButton>
               )}
               <div className="grid grid-cols-3 gap-3">
-                <NeoButton onClick={handleCopy} tone="base" className="text-xs">
+                <NeoButton
+                  onClick={handleCopy}
+                  tone="base"
+                  className="min-h-[44px] text-xs"
+                >
                   Copy
                 </NeoButton>
                 <NeoButton
                   onClick={handleShare}
                   tone="base"
-                  className="text-xs"
+                  className="min-h-[44px] text-xs"
                 >
                   Share
                 </NeoButton>
                 <NeoButton
                   onClick={() => window.print()}
                   tone="base"
-                  className="text-xs"
+                  className="min-h-[44px] text-xs"
                 >
                   Print
                 </NeoButton>
@@ -293,7 +297,10 @@ export default function VeganVersion() {
                 {notice}
               </p>
               <div className="flex justify-center text-xs font-black uppercase tracking-[0.06em]">
-                <Link href="/" className="underline underline-offset-4">
+                <Link
+                  href="/"
+                  className="inline-flex min-h-[44px] items-center px-2 underline underline-offset-4"
+                >
                   Scan another
                 </Link>
               </div>

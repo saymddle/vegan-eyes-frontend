@@ -136,20 +136,20 @@ export default function RecipeDetailPage() {
               actions={
                 <div className="flex flex-col gap-3">
                   <div className="grid grid-cols-3 gap-3">
-                    <NeoButton onClick={handleCopy} className="text-sm">
+                    <NeoButton onClick={handleCopy} className="min-h-[44px] text-sm">
                       Copy
                     </NeoButton>
                     <NeoButton
                       onClick={handleShare}
                       tone="base"
-                      className="text-sm"
+                      className="min-h-[44px] text-sm"
                     >
                       Share
                     </NeoButton>
                     <NeoButton
                       onClick={() => window.print()}
                       tone="base"
-                      className="text-sm"
+                      className="min-h-[44px] text-sm"
                     >
                       Print
                     </NeoButton>
@@ -163,8 +163,8 @@ export default function RecipeDetailPage() {
                   <button
                     type="button"
                     onClick={handleDelete}
-                    className="self-center text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
-                    style={{ color: colors.alert }}
+                    className="min-h-[44px] self-center px-2 text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
+                    style={{ color: "#7a4137" }}
                   >
                     Delete recipe
                   </button>

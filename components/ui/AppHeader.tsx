@@ -14,7 +14,7 @@ export default function AppHeader() {
         <Link
           href="/"
           aria-label="Vegan Eyes home"
-          className="flex items-center gap-3"
+          className="flex min-h-[44px] items-center gap-3"
         >
           <Image src="/logo.png" alt="" width={40} height={40} priority />
           <span className="text-lg font-black uppercase tracking-[0.04em]">
