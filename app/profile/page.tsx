@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import NeoButton from "@/components/ui/NeoButton";
@@ -200,6 +201,13 @@ export default function ProfilePage() {
         <NeoButton onClick={handleSignOut} tone="danger" className="w-full">
           Sign Out
         </NeoButton>
+
+        <Link
+          href="/privacy"
+          className="self-center text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
+        >
+          Privacy
+        </Link>
       </div>
     </main>
   );

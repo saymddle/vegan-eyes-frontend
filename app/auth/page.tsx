@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import NeoButton from "@/components/ui/NeoButton";
@@ -136,7 +137,10 @@ export default function AuthPage() {
               {mode === "sign_in" ? "Welcome back." : "Join Vegan Eyes."}
             </h1>
             <p className="text-sm font-bold uppercase leading-6 tracking-[0.04em]">
-              Sign in to save your vegan recipes and scans.
+              Sign in to save your vegan recipes and scans.{" "}
+              <Link href="/privacy" className="underline underline-offset-4">
+                How we use your data
+              </Link>
             </p>
 
             <label className="flex flex-col gap-2 text-xs font-black uppercase tracking-[0.08em]">
