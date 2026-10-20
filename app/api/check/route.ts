@@ -1,5 +1,6 @@
 import { checkIngredients } from "@/lib/ingredients/matcher";
 import { getIngredientIndex } from "@/lib/ingredients/loadIndex";
+import { withoutDishName } from "@/lib/ingredients/veganize";
 import type { CheckResponse } from "@/lib/types/check";
 
 export async function POST(request: Request) {
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
     }
 
     const index = await getIngredientIndex();
-    const flagged = checkIngredients(ingredients, index);
+    const flagged = checkIngredients(withoutDishName(ingredients), index);
 
     const response: CheckResponse = {
       status: flagged.some((item) => item.vegan_status === "non_vegan")

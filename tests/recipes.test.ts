@@ -157,7 +157,9 @@ const cases: Case[] = [
       "Cheese"
     ],
     has: [
-      "like a pounded vegan chicken cutlet",
+      // The title is the finished dish; chicken cutlet is the ingredient.
+      "Vegan Chicken Parmesan Cutlet",
+      "like a pounded seitan cutlet",
       "1 full box panko breadcrumbs",
       "Brush the surface with plant milk wash.",
       "Bread the First Side"

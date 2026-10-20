@@ -63,6 +63,51 @@ function stripMarkdown(line: string) {
     .trim();
 }
 
+// The recipe's name on its first line: "Chicken Parmesan Cutlet".
+function looksLikeTitle(raw: string) {
+  const line = stripMarkdown(raw);
+  return (
+    !/[,.;]/.test(line) &&
+    !/^\s*#/.test(raw) &&
+    !HEADING.test(line) &&
+    !STARTS_WITH_AMOUNT.test(line) &&
+    line.split(/\s+/).length <= 10
+  );
+}
+
+// The name of a finished dish, which is not an ingredient. Returns that
+// first line when the text is a whole recipe (it has an "Ingredients" or
+// "Directions" heading), so the ingredient check can leave it out.
+export function dishNameLine(text: string): string | null {
+  const lines = text
+    .replace(/\r/g, "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => /[a-zA-Z0-9]/.test(line));
+  if (lines.length < 2) return null;
+  const hasSections = lines.some((line) => HEADING.test(stripMarkdown(line)));
+  return hasSections && looksLikeTitle(lines[0]) ? lines[0] : null;
+}
+
+// The recipe without its dish name, for the ingredient check: "Chicken
+// Parmesan Cutlet" is the finished dish, not something to buy.
+export function withoutDishName(text: string) {
+  const name = dishNameLine(text);
+  return name ? text.replace(name, "") : text;
+}
+
+// A non-vegan dish's name becomes "Vegan Chicken Parmesan Cutlet"; the
+// ingredients inside it are swapped on their own lines.
+function dishTitle(name: string, index: IngredientIndex) {
+  if (/\b(vegan|plant[- ]?based|dairy[- ]?free|meat[- ]?free|meatless)\b/i.test(name)) {
+    return name;
+  }
+  const flagged = matchLine(normalize(name), index).some(
+    ({ row }) => toStatus(row.vegan_status) === "non_vegan"
+  );
+  return flagged ? `Vegan ${name}` : name;
+}
+
 function cleanSwap(text: string | null | undefined) {
   if (!text) return undefined;
   const cleaned = text.replace(/\s*\([^)]*\)/g, "").replace(/\s+/g, " ").trim();
@@ -256,24 +301,20 @@ export function veganizeRecipe(
       if (SITE_JUNK.test(line)) return;
 
       // A pasted recipe often starts with its name and no markdown.
-      if (
-        at === 0 &&
-        total > 1 &&
-        !/[,.;]/.test(line) &&
-        !isMarkdownHeading &&
-        !HEADING.test(line) &&
-        !STARTS_WITH_AMOUNT.test(line) &&
-        line.split(/\s+/).length <= 10
-      ) {
-        title = line;
-        lines.push({ kind: "heading", original: line, vegan: line, parts: [{ text: line }] });
+      if (at === 0 && total > 1 && looksLikeTitle(raw)) {
+        title = dishTitle(line, index);
+        lines.push({ kind: "heading", original: line, vegan: title, parts: [{ text: title }] });
         return;
       }
 
       if (isMarkdownHeading || HEADING.test(line) || (!inSteps && SECTION_LABEL.test(line))) {
         if (STEP_HEADING.test(line)) inSteps = true;
         else if (/^ingredients?\s*:?$/i.test(line)) inSteps = false;
-        if (!title && isMarkdownHeading && !HEADING.test(line)) title = line;
+        if (!title && isMarkdownHeading && !HEADING.test(line)) {
+          title = dishTitle(line, index);
+          lines.push({ kind: "heading", original: line, vegan: title, parts: [{ text: title }] });
+          return;
+        }
         lines.push({ kind: "heading", original: line, vegan: line, parts: [{ text: line }] });
         return;
       }

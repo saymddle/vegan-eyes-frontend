@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { matchLine, normalize } from "@/lib/ingredients/matcher";
-import { index } from "./helpers";
+import { withoutDishName } from "@/lib/ingredients/veganize";
+import { checkIngredients, matchLine, normalize } from "@/lib/ingredients/matcher";
+import { index, readRecipe } from "./helpers";
 
 const names = (text: string) =>
   matchLine(normalize(text), index).map((match) => match.row.name);
@@ -45,5 +46,25 @@ describe("cooking verbs are not ingredients", () => {
 describe("a vegan marker covers the whole name", () => {
   it("skips every word after 'vegan'", () => {
     expect(names("1 vegan chicken parmesan")).toEqual([]);
+  });
+});
+
+describe("the dish name is not an ingredient", () => {
+  const recipe = readRecipe("13-chicken-parmesan.txt");
+  const checked = checkIngredients(withoutDishName(recipe), index).map(
+    (item) => item.name
+  );
+
+  it("leaves the recipe's title out of the check", () => {
+    expect(checked).not.toContain("Chicken Parmesan Cutlet");
+  });
+
+  it("still flags the ingredients", () => {
+    expect(checked).toContain("Chicken");
+    expect(checked).toContain("Chicken Cutlet");
+  });
+
+  it("keeps the first line of a plain ingredient list", () => {
+    expect(withoutDishName("chicken\nmilk")).toBe("chicken\nmilk");
   });
 });

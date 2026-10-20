@@ -54,7 +54,7 @@ exports[`recipes convert to vegan > 05-vegan-markers.txt > matches the saved veg
 `;
 
 exports[`recipes convert to vegan > 06-ocr-markdown.txt > matches the saved vegan version 1`] = `
-"Chicken Alfredo
+"Vegan Chicken Alfredo
 Ingredients
 2 seitan cutlets
 1 cup full-fat coconut cream
@@ -80,7 +80,7 @@ exports[`recipes convert to vegan > 07-lasagna.txt > matches the saved vegan ver
 `;
 
 exports[`recipes convert to vegan > 08-panna-cotta.txt > matches the saved vegan version 1`] = `
-"Honey Panna Cotta
+"Vegan Honey Panna Cotta
 2 cups full-fat coconut cream
 1/2 cup unsweetened oat milk
 1/4 cup maple syrup
@@ -115,7 +115,7 @@ exports[`recipes convert to vegan > 11-several-per-line.txt > matches the saved 
 `;
 
 exports[`recipes convert to vegan > 12-fish-tacos.txt > matches the saved vegan version 1`] = `
-"Fish Tacos
+"Vegan Fish Tacos
 1 lb battered tofu or banana blossom
 8 corn tortillas
 1/2 cup vegan mayonnaise
@@ -125,7 +125,7 @@ exports[`recipes convert to vegan > 12-fish-tacos.txt > matches the saved vegan 
 `;
 
 exports[`recipes convert to vegan > 13-chicken-parmesan.txt > matches the saved vegan version 1`] = `
-"Chicken Parmesan Cutlet
+"Vegan Chicken Parmesan Cutlet
 Ingredients
 1 lb. ground seitan or ground vegan turkey
 1 tsp kosher salt (Diamond Crystal kosher salt preferred)
@@ -147,7 +147,7 @@ In a bowl, mix the ground seitan with salt, garlic powder, and onion powder unti
 Let it sit for a few minutes while you prep.
 Shape the vegan cutlet
 Lay out a large sheet of parchment paper and generously sprinkle it with flour.
-Place the vegan meat on top and press into a very thin, large oval, like a pounded vegan chicken cutlet. It should be large enough to nearly fill a sheet pan.
+Place the vegan meat on top and press into a very thin, large oval, like a pounded seitan cutlet. It should be large enough to nearly fill a sheet pan.
 Lightly sprinkle flour over the top surface.
 Bread the First Side
 Brush the surface with plant milk wash.
