@@ -5,6 +5,9 @@ import type { SwapChoice, SwapChoices } from "@/lib/ingredients/swapChoices";
 import type { RecipeSwap, VeganizedRecipe } from "@/lib/ingredients/veganize";
 import type { SwapReportReason } from "@/lib/api/swapReports";
 import { colors } from "@/lib/theme/colors";
+import Expandable from "@/components/ui/Expandable";
+import NeoWindow from "@/components/ui/NeoWindow";
+import DeeperDetails from "./DeeperDetails";
 import ReportSwapForm from "./ReportSwapForm";
 
 export function veganRecipeText(recipe: VeganizedRecipe) {
@@ -116,13 +119,16 @@ function ChoiceChip({
   );
 }
 
-function SwapItem({
+const statusLabel = { non_vegan: "Not Vegan", unclear: "Maybe" } as const;
+
+// One colored card per flagged ingredient: what it became, the other
+// options, and the "Deeper" details, all in one place.
+function SwapCard({
   swap,
   index,
   active,
   choice,
   onChoose,
-  onToggle,
   onReport
 }: {
   swap: RecipeSwap;
@@ -130,7 +136,6 @@ function SwapItem({
   active: boolean;
   choice?: SwapChoice;
   onChoose?: Props["onChoose"];
-  onToggle: () => void;
   onReport?: Props["onReport"];
 }) {
   // Picks are made on the suggested swap, so read them off the original.
@@ -138,73 +143,82 @@ function SwapItem({
     choice === "alternative" ? swap.alternative : swap.replacement;
   const alternative =
     choice === "alternative" ? swap.replacement : swap.alternative;
+  const variant = swap.status === "non_vegan" ? "not_vegan" : "maybe";
+  const canChoose = Boolean(onChoose && swap.replacement);
 
-  const header = swap.kept
-    ? `${swap.ingredient} (kept)`
-    : `${swap.ingredient} → ${swap.replacement}`;
+  const summary = swap.kept
+    ? `Kept as ${swap.ingredient}`
+    : swap.replacement
+      ? `Swap: ${swap.replacement}`
+      : swap.note ?? "Check the label";
 
   return (
     <li
       id={`swap-${index}`}
-      className="scroll-mt-24 border-2 border-[#000000] text-sm font-bold"
+      className={`scroll-mt-24 transition-all duration-300 ease-out ${
+        active ? "relative z-20 scale-[1.02]" : ""
+      }`}
       style={{
-        backgroundColor: colors.white,
-        color: colors.black,
-        outline: active ? `3px solid ${colors.secondary}` : undefined
+        outline: active ? `4px solid ${colors.black}` : undefined
       }}
     >
-      {onChoose ? (
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={active}
-          className="flex min-h-[44px] w-full items-center justify-between gap-3 p-3 text-left"
-        >
-          <span className="font-black uppercase tracking-[0.04em]">
-            {header}
-          </span>
-          <span className="shrink-0 text-xs font-black uppercase underline underline-offset-4">
-            {active ? "Done" : "Change"}
-          </span>
-        </button>
-      ) : (
-        <p className="p-3 font-black uppercase tracking-[0.04em]">{header}</p>
-      )}
+      <NeoWindow title={swap.ingredient} variant={variant} size="sm">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start justify-between gap-4 text-sm font-black uppercase tracking-[0.08em]">
+            <p className="shrink-0">{statusLabel[swap.status]}</p>
+            <p className="text-right">{summary}</p>
+          </div>
 
-      {onChoose && active ? (
-        <div className="flex flex-wrap gap-2 px-3 pb-3">
-          <ChoiceChip
-            label={suggested ?? ""}
-            active={!choice}
-            onClick={() => onChoose(index, undefined)}
-          />
-          {alternative ? (
-            <ChoiceChip
-              label={alternative}
-              active={choice === "alternative"}
-              onClick={() => onChoose(index, "alternative")}
-            />
+          {canChoose && onChoose ? (
+            <div
+              className="flex flex-wrap gap-2"
+              role="group"
+              aria-label={`Swap for ${swap.ingredient}`}
+            >
+              <ChoiceChip
+                label={suggested ?? ""}
+                active={!choice}
+                onClick={() => onChoose(index, undefined)}
+              />
+              {alternative ? (
+                <ChoiceChip
+                  label={alternative}
+                  active={choice === "alternative"}
+                  onClick={() => onChoose(index, "alternative")}
+                />
+              ) : null}
+              <ChoiceChip
+                label={`Keep ${swap.ingredient}`}
+                active={choice === "original"}
+                onClick={() => onChoose(index, "original")}
+              />
+            </div>
           ) : null}
-          <ChoiceChip
-            label={`Keep ${swap.ingredient}`}
-            active={choice === "original"}
-            onClick={() => onChoose(index, "original")}
-          />
+
+          {!onChoose && swap.alternative && !swap.kept ? (
+            <p className="text-xs font-black uppercase tracking-[0.04em]">
+              Or try: {swap.alternative}
+            </p>
+          ) : null}
+
+          <Expandable title="Deeper">
+            <DeeperDetails
+              name={swap.ingredient}
+              status={variant}
+              reason={swap.about}
+              isComplex={swap.complex}
+              swap={swap.replacement}
+            >
+              {canChoose && onReport ? (
+                <ReportSwapForm
+                  ingredient={swap.ingredient}
+                  onSubmit={(reason, note) => onReport(index, reason, note)}
+                />
+              ) : null}
+            </DeeperDetails>
+          </Expandable>
         </div>
-      ) : null}
-
-      {onChoose && active && onReport ? (
-        <ReportSwapForm
-          ingredient={swap.ingredient}
-          onSubmit={(reason, note) => onReport(index, reason, note)}
-        />
-      ) : null}
-
-      {!onChoose && swap.alternative && !swap.kept ? (
-        <p className="-mt-2 px-3 pb-3 text-xs uppercase tracking-[0.04em]">
-          Or try: {swap.alternative}
-        </p>
-      ) : null}
+      </NeoWindow>
     </li>
   );
 }
@@ -226,11 +240,15 @@ export default function VeganRecipeView({
 
   // Swaps keep their index so a highlight can point at its card.
   const indexed = recipe.swaps.map((swap, index) => ({ swap, index }));
-  const swaps = indexed.filter(({ swap }) => swap.replacement);
-  const toCheck = indexed.filter(({ swap }) => !swap.replacement);
+  // Swaps first, then the ones that only need a label check.
+  const cards = [
+    ...indexed.filter(({ swap }) => swap.replacement),
+    ...indexed.filter(({ swap }) => !swap.replacement)
+  ];
 
   function focusSwap(index: number) {
     setActiveSwap(index);
+    window.setTimeout(() => setActiveSwap(null), 1500);
     document
       .getElementById(`swap-${index}`)
       ?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -330,20 +348,20 @@ export default function VeganRecipeView({
 
       {actions}
 
-      {swaps.length > 0 ? (
+      {cards.length > 0 ? (
         <section data-tour="swaps" className="flex flex-col gap-3">
           <h2 className="text-sm font-black uppercase tracking-[0.06em]">
             Swaps
           </h2>
           {onChoose ? (
             <p className="-mt-2 text-xs font-bold">
-              Tap a highlighted ingredient or a swap below to pick another
-              option or keep the original.
+              Pick a swap on any card, or keep the original. Tap a highlighted
+              word in the recipe to jump to its card.
             </p>
           ) : null}
-          <ul className="flex flex-col gap-3">
-            {swaps.map(({ swap, index }) => (
-              <SwapItem
+          <ul className="flex flex-col gap-6">
+            {cards.map(({ swap, index }) => (
+              <SwapCard
                 key={swap.ingredient}
                 swap={swap}
                 index={index}
@@ -351,35 +369,7 @@ export default function VeganRecipeView({
                 choice={choices[index]}
                 onChoose={onChoose}
                 onReport={onReport}
-                onToggle={() =>
-                  setActiveSwap(activeSwap === index ? null : index)
-                }
               />
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {toCheck.length > 0 ? (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-black uppercase tracking-[0.06em]">
-            Check the label
-          </h2>
-          <ul className="flex flex-col gap-3">
-            {toCheck.map(({ swap, index }) => (
-              <li
-                key={swap.ingredient}
-                id={`swap-${index}`}
-                className="border-2 border-[#000000] p-3 text-sm font-bold"
-                style={{ backgroundColor: colors.white, color: colors.black }}
-              >
-                <p className="font-black uppercase tracking-[0.04em]">
-                  {swap.ingredient}
-                </p>
-                <p className="mt-1 text-xs uppercase tracking-[0.04em]">
-                  {swap.note}
-                </p>
-              </li>
             ))}
           </ul>
         </section>

@@ -17,6 +17,9 @@ export type RecipeSwap = {
   replacement?: string;
   alternative?: string;
   note?: string;
+  // Why it isn't vegan, from the database ("Milk cheese").
+  about?: string;
+  complex?: boolean;
   // The cook chose to keep the original ingredient.
   kept?: boolean;
 };
@@ -127,6 +130,14 @@ export function matchCase(replacement: string, atStart: boolean) {
 }
 
 function toSwap(row: IngredientRow): RecipeSwap {
+  return {
+    ...baseSwap(row),
+    about: row.lab_note ?? undefined,
+    complex: row.is_complex ?? false
+  };
+}
+
+function baseSwap(row: IngredientRow): RecipeSwap {
   const status = toStatus(row.vegan_status) as RecipeSwap["status"];
   const primary = cleanSwap(row.swap_static) ?? cleanSwap(row.swap_functional);
   const alternative = cleanSwap(row.swap_static)

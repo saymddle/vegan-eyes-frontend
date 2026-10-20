@@ -37,7 +37,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
 
   if (state === "sent") {
     return (
-      <p className="px-3 pb-3 text-xs font-black uppercase tracking-[0.04em]">
+      <p className="text-xs font-black uppercase tracking-[0.04em]">
         Thanks. We&apos;ll review this swap.
       </p>
     );
@@ -48,7 +48,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mx-3 mb-3 min-h-[44px] text-xs font-black uppercase tracking-[0.04em] underline underline-offset-4"
+        className="min-h-[44px] self-start text-xs font-black uppercase tracking-[0.04em] underline underline-offset-4"
       >
         Report a wrong swap
       </button>
@@ -56,7 +56,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
   }
 
   return (
-    <fieldset className="mx-3 mb-3 flex flex-col gap-2 border-t-2 border-[#000000] pt-3">
+    <fieldset className="flex flex-col gap-2 border-t-2 border-[#000000] pt-3">
       <legend className="sr-only">
         What&apos;s wrong with the {ingredient} swap?
       </legend>
