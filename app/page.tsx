@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Webcam from "react-webcam";
+import BarcodeScanner from "@/components/features/BarcodeScanner";
 import Walkthrough, {
   type WalkthroughStep
 } from "@/components/features/Walkthrough";
@@ -11,7 +12,8 @@ import NeoButton from "@/components/ui/NeoButton";
 import NeoSwitch from "@/components/ui/NeoSwitch";
 import NeoWindow from "@/components/ui/NeoWindow";
 import { INTRO_SEEN, SCAN_TOUR_SEEN, hasFlag } from "@/lib/onboarding/flags";
-import { storeScanInput } from "@/lib/store/recipeInput";
+import type { Product } from "@/lib/products/openFoodFacts";
+import { storeProductScan, storeScanInput } from "@/lib/store/recipeInput";
 import { readUpload } from "@/lib/utils/readUpload";
 import { colors } from "@/lib/theme/colors";
 import type { Ingredient } from "@/lib/utils/ocrIngredients";
@@ -45,6 +47,8 @@ export default function Home() {
     null
   );
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [barcodeOpen, setBarcodeOpen] = useState(false);
+  const [lookingUp, setLookingUp] = useState(false);
   const [rawText, setRawText] = useState<string>("");
   const [scanError, setScanError] = useState("");
   const [showHelp, setShowHelp] = useState(false);
@@ -67,7 +71,7 @@ export default function Home() {
       {
         target: "scan-input",
         title: "Add your recipe",
-        body: "Tap Capture to take a photo, Upload to pick a photo or PDF, or switch to Type and paste. No recipe handy?",
+        body: "Tap Capture to take a photo, Upload to pick a photo or PDF, Scan a barcode to look up a packaged product, or switch to Type and paste. No recipe handy?",
         extra: (
           <button
             type="button"
@@ -140,6 +144,45 @@ export default function Home() {
       setScanError(
         error instanceof Error ? error.message : "Couldn't open that file."
       );
+    }
+  }
+
+  async function handleBarcode(barcode: string) {
+    setLookingUp(true);
+    setScanError("");
+
+    try {
+      const res = await fetch(
+        `/api/product?barcode=${encodeURIComponent(barcode)}`
+      );
+      const data = (await res.json()) as { product?: Product };
+      const product = data.product;
+
+      if (res.status === 404 || (res.ok && !product)) {
+        setScanError(
+          "We don't know this barcode yet. Snap the ingredient list on the back instead."
+        );
+      } else if (!res.ok || !product) {
+        setScanError(
+          "Couldn't look up that barcode. Check your connection and try again."
+        );
+      } else if (!product.ingredients) {
+        setScanError(
+          `Found ${product.name || "this product"}, but it has no ingredient list yet. Snap the ingredient list on the back instead.`
+        );
+      } else {
+        storeProductScan(product);
+        router.push("/results");
+        return;
+      }
+      setBarcodeOpen(false);
+    } catch {
+      setScanError(
+        "Couldn't look up that barcode. Check your connection and try again."
+      );
+      setBarcodeOpen(false);
+    } finally {
+      setLookingUp(false);
     }
   }
 
@@ -268,7 +311,13 @@ export default function Home() {
             >
               {mode === "scan" ? (
                 <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 text-center">
-                  {pdf ? (
+                  {barcodeOpen ? (
+                    <BarcodeScanner
+                      onDetected={handleBarcode}
+                      onCancel={() => setBarcodeOpen(false)}
+                      busy={lookingUp}
+                    />
+                  ) : pdf ? (
                     <div className="flex min-h-[160px] w-full flex-col items-center justify-center gap-2 rounded border-[3px] border-[#000000] p-4">
                       <span aria-hidden="true" className="text-5xl">
                         📄
@@ -295,24 +344,43 @@ export default function Home() {
                     />
                   )}
 
-                  <div className="flex flex-wrap justify-center gap-3">
+                  <div
+                    className={`grid w-full max-w-[320px] grid-cols-2 gap-3 ${
+                      barcodeOpen ? "hidden" : ""
+                    }`}
+                  >
                     <button
                       type="button"
                       onClick={image || pdf ? clearPicture : handleCapture}
-                      className="min-h-[44px] border-[3px] border-[#000000] bg-[#f8f5ee] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
+                      className="min-h-[44px] border-[3px] border-[#000000] bg-[#f8f5ee] px-2 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
                     >
                       {image || pdf ? "Retake" : "Capture"}
                     </button>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="min-h-[44px] border-[3px] border-[#000000] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
+                      className="min-h-[44px] border-[3px] border-[#000000] px-2 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
                       style={{
                         backgroundColor: colors.secondary,
                         color: colors.black
                       }}
                     >
                       Upload
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearPicture();
+                        setScanError("");
+                        setBarcodeOpen(true);
+                      }}
+                      className="col-span-2 min-h-[44px] border-[3px] border-[#000000] px-2 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
+                      style={{
+                        backgroundColor: colors.primary,
+                        color: colors.white
+                      }}
+                    >
+                      Scan a barcode
                     </button>
                     <input
                       ref={fileInputRef}

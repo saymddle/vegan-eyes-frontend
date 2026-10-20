@@ -21,7 +21,8 @@ import {
   highlightIngredients
 } from "@/lib/utils/highlightIngredients";
 
-import { INPUT_STORAGE_KEY } from "@/lib/store/recipeInput";
+import type { Product } from "@/lib/products/openFoodFacts";
+import { INPUT_STORAGE_KEY, readProduct } from "@/lib/store/recipeInput";
 
 const statusCopy: Record<UIStatus, { title: string; body: string }> = {
   vegan: {
@@ -73,6 +74,15 @@ export default function ResultsPage() {
     null
   );
   const [tab, setTab] = useState<"vegan" | "original">("vegan");
+  // Set when the scan was a product barcode.
+  const [product, setProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    const scanned = readProduct();
+    setProduct(scanned);
+    // A packaged product can't be cooked differently, so open on its label.
+    if (scanned) setTab("original");
+  }, []);
 
   useEffect(() => {
     let isActive = true;
@@ -212,6 +222,7 @@ export default function ResultsPage() {
           waitFor="save"
         />
         <BackButton label="Scan" />
+        {product ? <ProductCard product={product} /> : null}
         <div
           data-tour="verdict"
           className={`transition-all duration-300 ease-out ${
@@ -238,7 +249,12 @@ export default function ResultsPage() {
         >
           {(
             [
-              ["original", "Original", colors.secondary, colors.black],
+              [
+                "original",
+                product ? "Label" : "Original",
+                colors.secondary,
+                colors.black
+              ],
               ["vegan", "Vegan", colors.primary, colors.white]
             ] as const
           ).map(([key, label, background, text]) => (
@@ -286,7 +302,7 @@ export default function ResultsPage() {
 
         {tab === "original" && !isLoading && !error && result ? (
           <NeoWindow
-            title="Original Recipe"
+            title={product ? "Ingredient List" : "Original Recipe"}
             variant={result.status}
             size="md"
             className={focusedIngredient ? "relative z-20" : ""}
@@ -356,5 +372,68 @@ export default function ResultsPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+function ProductCard({ product }: { product: Product }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  return (
+    <div
+      className="flex items-center gap-4 border-[3px] border-[#000000] p-4 shadow-[6px_6px_0px_#000000]"
+      style={{ backgroundColor: colors.white, color: colors.black }}
+    >
+      {product.image && !imageFailed ? (
+        <img
+          src={product.image}
+          alt=""
+          onError={() => setImageFailed(true)}
+          className="h-20 w-20 shrink-0 border-[3px] border-[#000000] object-contain"
+        />
+      ) : (
+        <span
+          aria-hidden="true"
+          className="flex h-20 w-20 shrink-0 items-center justify-center border-[3px] border-[#000000] text-4xl"
+        >
+          📦
+        </span>
+      )}
+      <div className="flex min-w-0 flex-col gap-1">
+        {product.brand ? (
+          <p className="text-xs font-black uppercase tracking-[0.08em] opacity-80">
+            {product.brand}
+          </p>
+        ) : null}
+        <h2 className="break-words text-lg font-black uppercase leading-tight">
+          {product.name || "Unnamed product"}
+        </h2>
+        {product.labelledVegan ? (
+          <p
+            className="self-start border-2 border-[#000000] px-2 py-0.5 text-[11px] font-black uppercase tracking-[0.08em]"
+            style={{ backgroundColor: colors.primary, color: colors.white }}
+          >
+            Labelled vegan on the pack
+          </p>
+        ) : null}
+        {product.traces ? (
+          <p className="text-xs font-bold leading-5">
+            <span className="font-black uppercase">Pack warning:</span>{" "}
+            {product.traces}. That&apos;s about shared factories, not an
+            ingredient, so it doesn&apos;t change the verdict.
+          </p>
+        ) : null}
+        <p className="text-[11px] font-bold leading-5">
+          Barcode {product.barcode}. Product data from{" "}
+          <a
+            href={`https://world.openfoodfacts.org/product/${product.barcode}`}
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-2"
+          >
+            Open Food Facts
+          </a>
+          .
+        </p>
+      </div>
+    </div>
   );
 }
