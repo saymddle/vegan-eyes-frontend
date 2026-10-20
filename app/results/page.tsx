@@ -309,7 +309,7 @@ export default function ResultsPage() {
           >
             <div className="flex flex-col gap-4">
               <div
-                className="border-[3px] border-[#000000] p-4 text-sm font-bold uppercase leading-7 tracking-[0.04em]"
+                className="whitespace-pre-line border-[3px] border-[#000000] p-4 text-sm font-bold uppercase leading-7 tracking-[0.04em]"
                 style={{
                   backgroundColor: colors.white,
                   color: colors.black
