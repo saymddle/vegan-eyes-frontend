@@ -16,8 +16,17 @@ import {
   type SwapChoice,
   type SwapChoices
 } from "@/lib/ingredients/swapChoices";
+import {
+  applyRewrite,
+  rewriteRequest,
+  type RewriteResult
+} from "@/lib/ingredients/rewrite";
 import type { VeganizedRecipe } from "@/lib/ingredients/veganize";
-import { RECIPE_STORAGE_KEY, readRecipeSource } from "@/lib/store/recipeInput";
+import {
+  RECIPE_STORAGE_KEY,
+  readProduct,
+  readRecipeSource
+} from "@/lib/store/recipeInput";
 import { colors } from "@/lib/theme/colors";
 import { shareText } from "@/lib/utils/share";
 
@@ -34,15 +43,65 @@ export default function VeganVersion() {
   const [savedId, setSavedId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // What is shown, copied and saved: the conversion with the cook's picks.
-  const recipe = useMemo(
+  // The conversion with the cook's picks.
+  const chosen = useMemo(
     () => (converted ? applySwapChoices(converted, choices) : null),
     [converted, choices]
+  );
+
+  // AI-reworded steps for each set of picks, fetched once per set. An empty
+  // list means the rewrite failed or changed nothing.
+  const [rewrites, setRewrites] = useState<Record<string, (string | null)[]>>(
+    {}
+  );
+  const [plainSteps, setPlainSteps] = useState(false);
+  // A packaged product's label has no cooking steps to adjust.
+  const [isProduct, setIsProduct] = useState(false);
+  const rewriteKey = useMemo(() => {
+    const request = chosen && !isProduct ? rewriteRequest(chosen) : null;
+    return request ? JSON.stringify(request) : null;
+  }, [chosen, isProduct]);
+  const rewritten = rewriteKey ? rewrites[rewriteKey] : undefined;
+  const isRewriting = Boolean(rewriteKey) && rewritten === undefined;
+  const hasRewrite = Boolean(rewritten?.some(Boolean));
+
+  useEffect(() => {
+    if (!rewriteKey || rewrites[rewriteKey] !== undefined) return;
+    let active = true;
+    // Waits a moment so flipping through swap picks sends one request.
+    const timer = window.setTimeout(async () => {
+      let steps: (string | null)[] = [];
+      try {
+        const res = await fetch("/api/rewrite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: rewriteKey
+        });
+        if (res.ok) steps = ((await res.json()) as RewriteResult).steps ?? [];
+      } catch {
+        // The plain steps are shown instead.
+      }
+      if (active) setRewrites((current) => ({ ...current, [rewriteKey]: steps }));
+    }, 600);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [rewriteKey, rewrites]);
+
+  // What is shown, copied and saved.
+  const recipe = useMemo(
+    () =>
+      chosen && rewritten && hasRewrite && !plainSteps
+        ? applyRewrite(chosen, rewritten)
+        : chosen,
+    [chosen, rewritten, hasRewrite, plainSteps]
   );
 
   const convert = useCallback(async (isActive: () => boolean) => {
     const stored = sessionStorage.getItem(RECIPE_STORAGE_KEY) || "";
     setSource(stored);
+    setIsProduct(readProduct() !== null);
     setError("");
 
     if (!stored.trim()) {
@@ -238,6 +297,34 @@ export default function VeganVersion() {
             </NeoButton>
           </div>
         </section>
+      ) : null}
+
+      {!isLoading && recipe && (isRewriting || hasRewrite) ? (
+        <div
+          className="flex flex-wrap items-center justify-between gap-2 border-[3px] border-[#000000] px-3 py-2 text-xs font-black uppercase tracking-[0.06em]"
+          style={{ backgroundColor: colors.white, color: colors.black }}
+          aria-live="polite"
+        >
+          <span>
+            {isRewriting
+              ? "Adjusting the steps for your swaps..."
+              : plainSteps
+                ? "Showing the plain swapped steps"
+                : "Steps adjusted for your swaps"}
+          </span>
+          {hasRewrite ? (
+            <button
+              type="button"
+              onClick={() => {
+                setPlainSteps((plain) => !plain);
+                setSavedId(null);
+              }}
+              className="min-h-[44px] px-1 underline underline-offset-4"
+            >
+              {plainSteps ? "Show adjusted steps" : "Show plain steps"}
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
       {!isLoading && recipe ? (
