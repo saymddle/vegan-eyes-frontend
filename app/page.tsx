@@ -71,7 +71,7 @@ export default function Home() {
       {
         target: "scan-input",
         title: "Add your recipe",
-        body: "Tap Capture to take a photo, Upload to pick a photo or PDF, Scan a barcode to look up a packaged product, or switch to Type and paste. No recipe handy?",
+        body: "Tap the camera to take a photo, the arrow to upload a photo or PDF, or the barcode to look up a packaged product. Or switch to Type and paste. No recipe handy?",
         extra: (
           <button
             type="button"
@@ -263,11 +263,9 @@ export default function Home() {
     <main className="app-shell" style={{ backgroundColor: colors.primary }}>
       <Walkthrough steps={tourSteps} storageKey={SCAN_TOUR_SEEN} />
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
-        <NeoWindow
-          title="Scan"
-          variant="vegan"
-          size="lg"
-          headerAction={
+        <NeoWindow variant="vegan" size="lg">
+          <div className="relative flex flex-col gap-6">
+            <div className="absolute right-0 top-0 z-10">
             <button
               type="button"
               onClick={() => setShowHelp((open) => !open)}
@@ -282,9 +280,7 @@ export default function Home() {
             >
               ?
             </button>
-          }
-        >
-          <div className="flex flex-col gap-6">
+            </div>
             {showHelp ? (
               <WelcomeCard onClose={() => setShowHelp(false)} />
             ) : null}
@@ -345,43 +341,38 @@ export default function Home() {
                   )}
 
                   <div
-                    className={`grid w-full max-w-[320px] grid-cols-2 gap-3 ${
+                    className={`flex w-full justify-center gap-3 ${
                       barcodeOpen ? "hidden" : ""
                     }`}
                   >
-                    <button
-                      type="button"
+                    <IconButton
+                      label={image || pdf ? "Retake" : "Take a photo"}
                       onClick={image || pdf ? clearPicture : handleCapture}
-                      className="min-h-[44px] border-[3px] border-[#000000] bg-[#f8f5ee] px-2 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
+                      background="#f8f5ee"
+                      color={colors.black}
                     >
-                      {image || pdf ? "Retake" : "Capture"}
-                    </button>
-                    <button
-                      type="button"
+                      {image || pdf ? <RetakeIcon /> : <CameraIcon />}
+                    </IconButton>
+                    <IconButton
+                      label="Upload a photo or PDF"
                       onClick={() => fileInputRef.current?.click()}
-                      className="min-h-[44px] border-[3px] border-[#000000] px-2 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
-                      style={{
-                        backgroundColor: colors.secondary,
-                        color: colors.black
-                      }}
+                      background={colors.secondary}
+                      color={colors.black}
                     >
-                      Upload
-                    </button>
-                    <button
-                      type="button"
+                      <UploadIcon />
+                    </IconButton>
+                    <IconButton
+                      label="Scan a barcode"
                       onClick={() => {
                         clearPicture();
                         setScanError("");
                         setBarcodeOpen(true);
                       }}
-                      className="col-span-2 min-h-[44px] border-[3px] border-[#000000] px-2 py-2 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000]"
-                      style={{
-                        backgroundColor: colors.primary,
-                        color: colors.white
-                      }}
+                      background={colors.primary}
+                      color={colors.white}
                     >
-                      Scan a barcode
-                    </button>
+                      <BarcodeIcon />
+                    </IconButton>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -455,5 +446,82 @@ export default function Home() {
         </NeoWindow>
       </div>
     </main>
+  );
+}
+
+function IconButton({
+  label,
+  onClick,
+  background,
+  color,
+  children
+}: {
+  label: string;
+  onClick: () => void;
+  background: string;
+  color: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="flex h-14 w-14 shrink-0 items-center justify-center border-[3px] border-[#000000] shadow-[4px_4px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_#000000]"
+      style={{ backgroundColor: background, color }}
+    >
+      {children}
+    </button>
+  );
+}
+
+const iconProps = {
+  width: 28,
+  height: 28,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2.5,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true
+};
+
+function CameraIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </svg>
+  );
+}
+
+function RetakeIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+      <path d="M20 4v7h-7" />
+    </svg>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M12 16V4" />
+      <path d="M7 9l5-5 5 5" />
+      <path d="M4 16v4h16v-4" />
+    </svg>
+  );
+}
+
+function BarcodeIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M3 7V4h3M18 4h3v3M21 17v3h-3M6 20H3v-3" />
+      <path d="M7 8v8M10 8v8M14 8v8M17 8v8" strokeWidth={2} />
+      <path d="M12 8v8" strokeWidth={1} />
+    </svg>
   );
 }

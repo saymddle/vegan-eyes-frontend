@@ -107,7 +107,7 @@ export default function ProfilePage() {
   return (
     <main className="app-shell" style={{ backgroundColor: colors.base }}>
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
-        <NeoWindow title="Profile" variant="vegan" size="lg">
+        <NeoWindow variant="vegan" size="lg">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 rounded-full border-[3px] border-[#000000] bg-[#DEE1E0]" />
             <div className="flex flex-col gap-2">
