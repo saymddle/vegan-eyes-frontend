@@ -1,4 +1,9 @@
-import { matchCase, type LinePart, type VeganizedRecipe } from "./veganize";
+import {
+  matchCase,
+  toTitleCase,
+  type LinePart,
+  type VeganizedRecipe
+} from "./veganize";
 
 // What the cook picked for a swap; no entry means the suggested replacement.
 export type SwapChoice = "alternative" | "original";
@@ -7,7 +12,9 @@ export type SwapChoices = Record<number, SwapChoice>;
 const AMOUNT = /^[\d./½¼¾⅓⅔]+\s/;
 
 function chosenText(part: LinePart, alternative: string) {
-  const text = matchCase(alternative, /^[A-Z]/.test(part.text));
+  const text = part.titleCase
+    ? toTitleCase(alternative)
+    : matchCase(alternative, /^[A-Z]/.test(part.text));
   // A swap that rewrote the amount ("4 chicken breasts" as "4 seitan
   // cutlets") does not carry over to the alternative ("4 chickpeas"), so
   // say what it stands in for instead.
@@ -32,9 +39,12 @@ export function applySwapChoices(
         return { ...part, text: part.original ?? part.text };
       }
       const alternative = recipe.swaps[part.swap as number].alternative;
-      return alternative
-        ? { ...part, text: chosenText(part, alternative) }
-        : part;
+      if (!alternative) return part;
+      const text = chosenText(part, alternative);
+      return {
+        ...part,
+        text: part.keepWord ? `${text} ${part.original}` : text
+      };
     });
     return { ...line, parts, vegan: parts.map((part) => part.text).join("") };
   });

@@ -305,12 +305,12 @@ export default function VeganRecipeView({
           <div className="flex flex-col gap-2 text-sm font-bold leading-6">
             {recipe.lines.map((line, i) =>
               line.kind === "heading" &&
-              line.original === title ? null : line.kind === "heading" ? (
+              (line.original === title || line.vegan === title) ? null : line.kind === "heading" ? (
                 <h2
                   key={i}
                   className="mt-2 text-base font-black uppercase tracking-[0.06em] first:mt-0"
                 >
-                  {line.original}
+                  {showOriginal ? line.original : line.vegan}
                 </h2>
               ) : (
                 <p key={i} className={line.kind === "step" ? "mt-1" : ""}>

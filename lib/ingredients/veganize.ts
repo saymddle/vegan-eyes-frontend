@@ -25,7 +25,16 @@ export type RecipeSwap = {
 };
 
 // `original` is the matched text, kept so a swap can be undone.
-export type LinePart = { text: string; swap?: number; original?: string };
+// `keepWord` marks a swap shown in front of the word it describes:
+// "the cutlet" became "the seitan cutlet".
+export type LinePart = {
+  text: string;
+  swap?: number;
+  original?: string;
+  keepWord?: boolean;
+  // Swapped inside a title-case line, so any pick is shown in title case.
+  titleCase?: boolean;
+};
 
 export type RecipeLine = {
   kind: "heading" | "ingredient" | "step";
@@ -213,7 +222,70 @@ function replacementText(swap: RecipeSwap, matched: string) {
   return (amount ? matched.slice(0, amount[0].length) : "") + swap.replacement;
 }
 
-type Phrase = { words: string[]; swap: number; skipAtStart?: boolean };
+type Phrase = {
+  words: string[];
+  swap: number;
+  skipAtStart?: boolean;
+  keepWord?: boolean;
+};
+
+const MEATS = [
+  "beef", "pork", "chicken", "turkey", "lamb", "veal", "mutton", "duck",
+  "goose", "venison", "bison", "sausage", "bacon", "ham", "prosciutto",
+  "pancetta", "chorizo", "salami", "pepperoni", "mince", "steak", "brisket",
+  "lardon", "meatball", "meatballs"
+];
+const FISH = [
+  "fish", "cod", "salmon", "tuna", "tilapia", "halibut", "haddock", "trout",
+  "snapper", "mackerel", "sardine", "anchovy", "bass", "catfish", "mahi"
+];
+const SHELLFISH = [
+  "shrimp", "prawn", "crab", "lobster", "scallop", "mussel", "clam",
+  "oyster", "squid", "calamari"
+];
+const CHEESES = [
+  "cheese", "mozzarella", "parmesan", "parmigiano", "cheddar", "ricotta",
+  "feta", "gouda", "brie", "gruyere", "gruyère", "provolone", "pecorino",
+  "mascarpone", "halloumi", "burrata", "colby", "jack"
+];
+
+// Words a recipe uses for an ingredient it already listed: "Prep the meat"
+// means the chicken from the list, so it shows whatever the cook picked for
+// the chicken. With `keepWord` the word stays and the pick goes in front:
+// "Shape the cutlet" becomes "Shape the seitan cutlet".
+const GENERIC: Record<string, { kinds: string[]; keepWord?: boolean }> = {
+  meat: { kinds: MEATS },
+  meats: { kinds: MEATS },
+  poultry: { kinds: ["chicken", "turkey", "duck", "goose"] },
+  fish: { kinds: FISH },
+  seafood: { kinds: [...FISH, ...SHELLFISH] },
+  cheese: { kinds: CHEESES },
+  cheeses: { kinds: CHEESES },
+  cutlet: { kinds: [...MEATS, ...FISH], keepWord: true },
+  cutlets: { kinds: [...MEATS, ...FISH], keepWord: true },
+  patty: { kinds: [...MEATS, ...FISH], keepWord: true },
+  patties: { kinds: [...MEATS, ...FISH], keepWord: true },
+  fillet: { kinds: FISH, keepWord: true },
+  fillets: { kinds: FISH, keepWord: true },
+  filet: { kinds: FISH, keepWord: true },
+  filets: { kinds: FISH, keepWord: true }
+};
+
+const SMALL_WORDS = new Set(["a", "an", "and", "or", "of", "the", "with", "in", "to"]);
+
+export function toTitleCase(text: string) {
+  return text.replace(/(^|[\s(/-])([a-z]+)/g, (_all, gap: string, word: string) =>
+    gap && SMALL_WORDS.has(word)
+      ? gap + word
+      : gap + word.charAt(0).toUpperCase() + word.slice(1)
+  );
+}
+
+// "Prep the Meat": a line written in title case, like a section name.
+function isTitleCase(line: string) {
+  const words = line.match(/[A-Za-z]{4,}/g) ?? [];
+  return words.length > 0 && words.every((word) => /^[A-Z]/.test(word));
+}
 
 // Replaces every matched phrase in one pass, so a replacement ("coconut
 // cream") is never matched again by a shorter phrase ("cream").
@@ -235,6 +307,7 @@ function replacePhrases(
   );
   // Where the text starts, after any step number ("1. Cream the butter").
   const firstWord = (line.match(/^(?:\d+[.)]\s+)?/) ?? [""])[0].length;
+  const titleCase = isTitleCase(line);
 
   const parts: LinePart[] = [];
   let last = 0;
@@ -244,10 +317,20 @@ function replacePhrases(
     const phrase = usable[found.slice(1).findIndex((group) => group)];
     if (!phrase || (phrase.skipAtStart && start === firstWord)) continue;
     if (start > last) parts.push({ text: line.slice(last, start) });
+    const capital =
+      start === firstWord || (titleCase && /^[A-Z]/.test(found[0]));
+    const replacement = replacementText(swaps[phrase.swap], found[0]);
+    // In a title-case line ("Melt the Cheese") the swap is title case too.
+    const inTitle = titleCase && /^[A-Z]/.test(found[0]);
+    const swapped = inTitle
+      ? toTitleCase(replacement)
+      : matchCase(replacement, capital);
     parts.push({
-      text: matchCase(replacementText(swaps[phrase.swap], found[0]), start === firstWord),
+      text: phrase.keepWord ? `${swapped} ${found[0]}` : swapped,
       swap: phrase.swap,
-      original: found[0]
+      original: found[0],
+      ...(phrase.keepWord ? { keepWord: true } : {}),
+      ...(inTitle ? { titleCase: true } : {})
     });
     last = start + found[0].length;
   }
@@ -289,6 +372,32 @@ export function veganizeRecipe(
     return at;
   };
 
+  // "the meat" in a step means the chicken from the ingredient list.
+  const genericSwap = (name: string) => {
+    const generic = GENERIC[name];
+    if (!generic) return undefined;
+    for (const [listed, at] of swapByRow) {
+      if (fromSteps.has(at) || !swaps[at].replacement) continue;
+      if (listed.split(" ").some((word) => generic.kinds.includes(word))) {
+        return { swap: at, keepWord: generic.keepWord };
+      }
+    }
+    return undefined;
+  };
+
+  // A match in a step, as phrases to swap: the ingredient-list swap it
+  // refers to, so the step shows whatever the cook picked.
+  const stepPhrases = (
+    name: string,
+    words: string[]
+  ): Phrase[] | undefined => {
+    const listed = stepSwap(name);
+    if (listed !== undefined) return [{ words, swap: listed, skipAtStart: true }];
+    const generic = genericSwap(name);
+    if (generic) return [{ words, ...generic, skipAtStart: true }];
+    return undefined;
+  };
+
   // "cream" in a step means the "heavy cream" from the ingredient list.
   const stepSwap = (name: string) => {
     const exact = swapByRow.get(name);
@@ -326,7 +435,24 @@ export function veganizeRecipe(
           lines.push({ kind: "heading", original: line, vegan: title, parts: [{ text: title }] });
           return;
         }
-        lines.push({ kind: "heading", original: line, vegan: line, parts: [{ text: line }] });
+        // A section name such as "## Prep the Meat" shows the cook's pick
+        // for what it names, but never adds a swap of its own.
+        const named = HEADING.test(line)
+          ? []
+          : findFlagged(line, index).flatMap(
+              ({ row, words, parts }) =>
+                stepPhrases(normalize(row.name), words) ??
+                (parts ?? []).flatMap(
+                  (part) => stepPhrases(normalize(part.row.name), part.words) ?? []
+                )
+            );
+        const headingParts = replacePhrases(line, named, swaps);
+        lines.push({
+          kind: "heading",
+          original: line,
+          vegan: headingParts.map((part) => part.text).join(""),
+          parts: headingParts
+        });
         return;
       }
 
@@ -337,16 +463,23 @@ export function veganizeRecipe(
           ? "step"
           : "ingredient";
 
-      const matches = findFlagged(line, index).flatMap(({ row, words }): Phrase[] => {
+      const matches = findFlagged(line, index).flatMap(({ row, words, parts }): Phrase[] => {
         if (kind === "ingredient") return [{ words, swap: swapFor(row) }];
         // A step's first word is usually a verb ("Cream", "Butter"), so it is
         // never swapped. "cream" in a step means the "heavy cream" from the
         // ingredient list; anything non-vegan the list missed is swapped too,
         // wherever it appears.
-        const swap =
-          stepSwap(normalize(row.name)) ??
-          (toStatus(row.vegan_status) === "non_vegan" ? swapFor(row, true) : undefined);
-        return swap === undefined ? [] : [{ words, swap, skipAtStart: true }];
+        const whole = stepPhrases(normalize(row.name), words);
+        if (whole) return whole;
+        // "Build the Chicken Parmesan": swap the parts the list swapped
+        // ("chicken" as the cook's pick) and leave the rest as written.
+        const fromParts = (parts ?? []).flatMap(
+          (part) => stepPhrases(normalize(part.row.name), part.words) ?? []
+        );
+        if (fromParts.length) return fromParts;
+        return toStatus(row.vegan_status) === "non_vegan"
+          ? [{ words, swap: swapFor(row, true), skipAtStart: true }]
+          : [];
       });
 
       const parts = replacePhrases(line, matches, swaps);

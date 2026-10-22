@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { applySwapChoices } from "@/lib/ingredients/swapChoices";
+import { toTitleCase } from "@/lib/ingredients/veganize";
 import { convert, readRecipe } from "./helpers";
 
 type Case = {
@@ -143,23 +144,25 @@ const cases: Case[] = [
     // vegan, "chicken parmesan cutlet" is one non-vegan dish.
     file: "13-chicken-parmesan.txt",
     status: "non_vegan",
+    // "the meat", "the cutlet" and "the cheese" in the steps point back at
+    // the listed chicken and mozzarella, so they add no swaps of their own.
     swapped: [
       "Chicken",
       "Turkey",
       "Egg",
       "Pizza Sauce",
       "Mozzarella",
-      "Meat",
       "Chicken Cutlet",
-      "Egg Wash",
-      "Cutlet",
-      "Chicken Parmesan",
-      "Cheese"
+      "Egg Wash"
     ],
     has: [
       // The title is the finished dish; chicken cutlet is the ingredient.
       "Vegan Chicken Parmesan Cutlet",
       "like a pounded seitan cutlet",
+      "Prep the Seitan",
+      "Shape the Seitan Cutlet",
+      "Build the Seitan Parmesan",
+      "Melt the Vegan Mozzarella",
       "1 full box panko breadcrumbs",
       "Brush the surface with plant milk wash.",
       "Bread the First Side"
@@ -168,7 +171,9 @@ const cases: Case[] = [
       "panko vegan breadcrumbs",
       "vegan pizza vegan sauce",
       "flax eggs wash",
-      "vegan chicken vegan parmesan"
+      "vegan chicken vegan parmesan",
+      "vegan meat",
+      "vegan cheese"
     ]
   }
 ];
@@ -231,5 +236,50 @@ describe("the cook's swap choices", () => {
 
   it("can keep the original ingredient", () => {
     expect(lineWithMilk({ [milk]: "original" })).toBe("1 cup milk");
+  });
+});
+
+describe("section names follow the cook's picks", () => {
+  const recipe = convert(readRecipe("13-chicken-parmesan.txt"));
+  const chicken = recipe.swaps.findIndex(
+    (swap) => swap.ingredient === "Chicken"
+  );
+  const line = (choice: Parameters<typeof applySwapChoices>[1], start: string) =>
+    applySwapChoices(recipe, choice).lines.find((recipeLine) =>
+      recipeLine.original.startsWith(start)
+    )?.vegan;
+
+  it("shows the suggested swap", () => {
+    expect(line({}, "Prep the")).toBe("Prep the Seitan");
+    expect(line({}, "Shape the")).toBe("Shape the Seitan Cutlet");
+  });
+
+  it("shows the alternative when the cook picks it", () => {
+    const alternative = recipe.swaps[chicken].alternative as string;
+    expect(line({ [chicken]: "alternative" }, "Prep the")).toBe(
+      `Prep the ${toTitleCase(alternative)}`
+    );
+    expect(line({ [chicken]: "alternative" }, "Shape the")).toContain(
+      "Cutlet"
+    );
+  });
+
+  it("goes back to the original word when the cook keeps it", () => {
+    expect(line({ [chicken]: "original" }, "Prep the")).toBe("Prep the Meat");
+    expect(line({ [chicken]: "original" }, "Shape the")).toBe(
+      "Shape the Cutlet"
+    );
+  });
+});
+
+describe("markdown section names", () => {
+  it("show the swap for what they name", () => {
+    const recipe = convert(
+      "# Weeknight Dinner\n## Ingredients\n- 1 lb chicken\n## Instructions\n### Prep the Meat\nCook the meat until golden."
+    );
+    const text = recipe.lines.map((line) => line.vegan).join("\n");
+    expect(text).toContain("Prep the Seitan");
+    expect(text).toContain("Cook the seitan until golden.");
+    expect(recipe.swaps.map((swap) => swap.ingredient)).toEqual(["Chicken"]);
   });
 });

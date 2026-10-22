@@ -180,7 +180,12 @@ function compound(parts: (LineMatch & { start: number })[]) {
     is_complex: true,
     aliases: null
   };
-  return { row, words, start: parts[0].start };
+  return {
+    row,
+    words,
+    start: parts[0].start,
+    parts: parts.map((part) => ({ row: part.row, words: part.words }))
+  };
 }
 
 // A word that only repeats what the ingredient before it already is, so
@@ -204,6 +209,9 @@ export type LineMatch = {
   row: IngredientRow;
   // The normalized words of the line that matched, e.g. ["heavy", "cream"].
   words: string[];
+  // For a name joined from neighbouring words ("chicken parmesan"), the
+  // matches it was made from.
+  parts?: LineMatch[];
 };
 
 // Finds the database rows mentioned in one ingredient line, longest phrase
@@ -297,7 +305,9 @@ export function matchLine(line: string, index: IngredientIndex): LineMatch[] {
   }
   flush();
 
-  return kept.map(({ row, words: matched }) => ({ row, words: matched }));
+  return kept.map(({ row, words: matched, parts }) =>
+    parts ? { row, words: matched, parts } : { row, words: matched }
+  );
 }
 
 export function checkIngredients(
