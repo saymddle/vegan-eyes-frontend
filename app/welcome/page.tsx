@@ -18,6 +18,8 @@ type Slide = {
   title: string;
   body: string;
   art: React.ReactNode;
+  // The art fills the card's free space, centred (the welcome logo).
+  hero?: boolean;
   background: string;
   text: string;
 };
@@ -40,14 +42,15 @@ const slides: Slide[] = [
     body: "Vegan Eyes spots the animal ingredients in any recipe or food label.",
     art: (
       <Image
-        src="/logo.png"
+        src="/icon-512.png"
         alt=""
-        width={80}
-        height={80}
+        width={224}
+        height={224}
         priority
-        className="min-[400px]:h-24 min-[400px]:w-24"
+        className="h-40 w-40 min-[400px]:h-56 min-[400px]:w-56 [@media(max-height:640px)]:h-28 [@media(max-height:640px)]:w-28"
       />
     ),
+    hero: true,
     background: colors.primary,
     text: colors.white
   },
@@ -144,9 +147,15 @@ export default function WelcomePage() {
                 className="flex h-full min-h-[240px] flex-col justify-between gap-6 border-[3px] border-[#000000] p-6 shadow-[8px_8px_0px_#000000]"
                 style={{ backgroundColor: slide.background, color: slide.text }}
               >
-                <div className="flex h-20 items-center min-[400px]:h-28 [@media(max-height:640px)]:hidden">
-                  {slide.art}
-                </div>
+                {slide.hero ? (
+                  <div className="flex flex-1 items-center justify-center">
+                    {slide.art}
+                  </div>
+                ) : (
+                  <div className="flex h-20 items-center min-[400px]:h-28 [@media(max-height:640px)]:hidden">
+                    {slide.art}
+                  </div>
+                )}
                 <div className="flex flex-col gap-4">
                   <h1 className="text-3xl font-black uppercase leading-[0.95] min-[400px]:text-4xl tracking-[-0.04em]">
                     {slide.title}
