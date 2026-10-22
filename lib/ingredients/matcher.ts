@@ -133,6 +133,56 @@ function markedVegan(words: string[], start: number, end: number) {
   );
 }
 
+// Ingredient words that are also cooking verbs: "Bread the first side",
+// "butter the pan", "flour the board". Followed by one of these, they are
+// the verb and not the food.
+const VERB_NOUNS = new Set([
+  "bread", "butter", "cream", "flour", "oil", "grease", "salt", "sugar",
+  "crumb", "egg", "stock", "season"
+]);
+const AFTER_VERB = new Set([
+  "the", "a", "an", "it", "them", "each", "both", "your", "all"
+]);
+
+function usedAsVerb(words: string[], start: number, size: number) {
+  return (
+    size === 1 &&
+    VERB_NOUNS.has(words[start]) &&
+    AFTER_VERB.has(words[start + 1] ?? "")
+  );
+}
+
+function titleCase(words: string[]) {
+  return words
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+const STATUS_RANK = { vegan: 0, unclear: 1, non_vegan: 2 } as const;
+
+// Two or more flagged items right next to each other name one thing:
+// "chicken parmesan cutlet" is one dish, "pizza sauce" one sauce. They
+// become a single item with one swap instead of a swap per word.
+function compound(parts: (LineMatch & { start: number })[]) {
+  const words = parts.flatMap((part) => part.words);
+  const status = parts
+    .map((part) => toStatus(part.row.vegan_status))
+    .reduce((worst, next) =>
+      STATUS_RANK[next] > STATUS_RANK[worst] ? next : worst
+    );
+  const phrase = words.join(" ");
+  const row: IngredientRow = {
+    name: titleCase(words),
+    vegan_status: status,
+    lab_note: `Made with ${parts.map((part) => part.row.name.toLowerCase()).join(", ")}.`,
+    swap_static: status === "non_vegan" ? `Vegan ${phrase}` : null,
+    swap_functional: null,
+    is_complex: true,
+    aliases: null
+  };
+  return { row, words, start: parts[0].start };
+}
+
 // A word that only repeats what the ingredient before it already is, so
 // "cheddar cheese" is one swap and not "vegan cheddar vegan cheese".
 const REPEATED_NOUNS = new Set(["cheese", "cheeses"]);
@@ -169,6 +219,8 @@ export function matchLine(line: string, index: IngredientIndex): LineMatch[] {
 
   const used = new Array<boolean>(words.length).fill(false);
   const found: (LineMatch & { start: number })[] = [];
+  // Words already marked plant-based ("vegan cheddar").
+  const veganSpans: { start: number; end: number }[] = [];
 
   for (let size = Math.min(index.maxWords, words.length); size > 0; size--) {
     for (let start = 0; start + size <= words.length; start++) {
@@ -176,11 +228,16 @@ export function matchLine(line: string, index: IngredientIndex): LineMatch[] {
       const phrase = words.slice(start, start + size);
       const row = lookup(index.terms, phrase);
       if (!row) continue;
+      if (usedAsVerb(words, start, size)) {
+        used[start] = true;
+        continue;
+      }
       // Skip "butter" in "vegan butter", but keep the words used so a
       // shorter phrase inside it is not matched either.
       if (markedVegan(words, start, start + size)) {
         const end = start + size + (words[start + size] === "free" ? 1 : 0);
         used.fill(true, start, end);
+        veganSpans.push({ start, end });
         continue;
       }
       found.push({ row, words: phrase, start });
@@ -188,8 +245,19 @@ export function matchLine(line: string, index: IngredientIndex): LineMatch[] {
     }
   }
 
+  found.sort((a, b) => a.start - b.start);
+
+  // "Vegan chicken parmesan" marks the whole name, not just "chicken".
+  const unmarked = found.filter((match) => {
+    const span = veganSpans.find((vegan) => vegan.end === match.start);
+    if (!span) return true;
+    span.end = match.start + match.words.length;
+    return false;
+  });
+  found.splice(0, found.length, ...unmarked);
+
   // Fold "cheese" into the cheese just before it.
-  const kept = found.filter((match) => {
+  const folded = found.filter((match) => {
     if (match.words.length !== 1 || !REPEATED_NOUNS.has(match.words[0])) {
       return true;
     }
@@ -203,6 +271,31 @@ export function matchLine(line: string, index: IngredientIndex): LineMatch[] {
     before.words = [...before.words, ...match.words];
     return false;
   });
+
+  // Join flagged items that sit right next to each other into one.
+  const kept: (LineMatch & { start: number })[] = [];
+  let group: (LineMatch & { start: number })[] = [];
+  const flush = () => {
+    if (group.length > 1) kept.push(compound(group));
+    else kept.push(...group);
+    group = [];
+  };
+  for (const match of folded) {
+    const flagged = toStatus(match.row.vegan_status) !== "vegan";
+    const last = group[group.length - 1];
+    if (
+      flagged &&
+      last &&
+      last.start + last.words.length === match.start
+    ) {
+      group.push(match);
+      continue;
+    }
+    flush();
+    if (flagged) group.push(match);
+    else kept.push(match);
+  }
+  flush();
 
   return kept.map(({ row, words: matched }) => ({ row, words: matched }));
 }

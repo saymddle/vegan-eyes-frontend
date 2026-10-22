@@ -1,14 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import type { UIIngredient } from "@/lib/types/result";
 import Expandable from "@/components/ui/Expandable";
-import NeoButton from "@/components/ui/NeoButton";
 import NeoWindow from "@/components/ui/NeoWindow";
-import { AUTH_REQUIRED_ERROR, authPath } from "@/lib/api/scansAuth";
-import { saveDeeper } from "@/lib/api/saveDeeper";
 import { getIngredientAnchorId } from "@/lib/utils/highlightIngredients";
+import DeeperDetails from "./DeeperDetails";
 
 const statusLabel = {
   vegan: "Vegan",
@@ -25,40 +21,8 @@ export default function IngredientCard({
   ingredient,
   focusedIngredient = null
 }: Props) {
-  const router = useRouter();
-  const [isInsightSaved, setIsInsightSaved] = useState(false);
-  const [saveError, setSaveError] = useState("");
   const isActive = focusedIngredient === ingredient.name;
   const isDimmed = Boolean(focusedIngredient) && !isActive;
-  const reason =
-    ingredient.reason ||
-    (ingredient.status === "not_vegan"
-      ? "Likely animal-derived or processed from animal sources."
-      : "Needs source verification before confirming vegan status.");
-
-  async function handleSaveInsight() {
-    try {
-      await saveDeeper({
-        ingredient: ingredient.name,
-        reason,
-        substitutes: [ingredient.swap || "No substitute listed"]
-      });
-      setIsInsightSaved(true);
-      setSaveError("");
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message === AUTH_REQUIRED_ERROR
-      ) {
-        router.push(authPath());
-        return;
-      }
-
-      setSaveError(
-        error instanceof Error ? error.message : "Failed to save insight"
-      );
-    }
-  }
 
   return (
     <div
@@ -78,30 +42,17 @@ export default function IngredientCard({
             </p>
           </div>
 
-          <Expandable title="Deeper">
-            <div className="flex flex-col gap-3 text-sm font-bold uppercase leading-6 tracking-[0.04em]">
-              <p>Why: {reason}</p>
-              <p>
-                Nourishment Fact:{" "}
-                {ingredient.reason ||
-                  "No nutrition detail returned for this ingredient."}
-              </p>
-              <p>
-                Complexity:{" "}
-                {ingredient.isComplex
-                  ? "Complex ingredient. Supplier origin may vary."
-                  : "Simple ingredient profile."}
-              </p>
-              <NeoButton
-                tone="secondary"
-                onClick={handleSaveInsight}
-                disabled={isInsightSaved}
-              >
-                {isInsightSaved ? "Insight Saved" : "Save Insight"}
-              </NeoButton>
-              {saveError ? <p>{saveError}</p> : null}
-            </div>
-          </Expandable>
+          {ingredient.status !== "vegan" ? (
+            <Expandable title="Deeper">
+              <DeeperDetails
+                name={ingredient.name}
+                status={ingredient.status}
+                reason={ingredient.reason}
+                isComplex={ingredient.isComplex}
+                swap={ingredient.swap}
+              />
+            </Expandable>
+          ) : null}
         </div>
       </NeoWindow>
     </div>

@@ -54,7 +54,7 @@ const tourSteps: WalkthroughStep[] = [
   {
     target: "swaps",
     title: "Change a swap",
-    body: "Tap any swap to pick another option or keep the original ingredient."
+    body: "Each card shows a swap. Pick another option, or keep the original ingredient."
   },
   {
     target: "save",
@@ -292,7 +292,11 @@ export default function ResultsPage() {
           </NeoWindow>
         ) : null}
 
-        {!isLoading && !error && result?.ingredients.length === 0 ? (
+        {/* On the Vegan tab each swap card carries these details. */}
+        {tab === "original" &&
+        !isLoading &&
+        !error &&
+        result?.ingredients.length === 0 ? (
           <NeoWindow title="Empty" variant="vegan" size="sm">
             <p className="text-sm font-black uppercase tracking-[0.04em]">
               No flagged ingredients in this response.
@@ -309,7 +313,7 @@ export default function ResultsPage() {
           >
             <div className="flex flex-col gap-4">
               <div
-                className="border-[3px] border-[#000000] p-4 text-sm font-bold uppercase leading-7 tracking-[0.04em]"
+                className="whitespace-pre-line border-[3px] border-[#000000] p-4 text-sm font-bold uppercase leading-7 tracking-[0.04em]"
                 style={{
                   backgroundColor: colors.white,
                   color: colors.black
@@ -343,7 +347,7 @@ export default function ResultsPage() {
           </NeoWindow>
         ) : null}
 
-        {!isLoading && !error
+        {tab === "original" && !isLoading && !error
           ? result?.ingredients.map((ingredient, index) => (
               <IngredientCard
                 key={`${ingredient.name}-${ingredient.status}-${index}`}

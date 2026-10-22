@@ -54,7 +54,7 @@ exports[`recipes convert to vegan > 05-vegan-markers.txt > matches the saved veg
 `;
 
 exports[`recipes convert to vegan > 06-ocr-markdown.txt > matches the saved vegan version 1`] = `
-"Chicken Alfredo
+"Vegan Chicken Alfredo
 Ingredients
 2 seitan cutlets
 1 cup full-fat coconut cream
@@ -76,11 +76,11 @@ exports[`recipes convert to vegan > 07-lasagna.txt > matches the saved vegan ver
 2 cups vegan mozzarella
 1/2 cup vegan parmesan
 1 jar marinara sauce
-12 vegan lasagna noodles"
+12 lasagna noodles"
 `;
 
 exports[`recipes convert to vegan > 08-panna-cotta.txt > matches the saved vegan version 1`] = `
-"Honey Panna Cotta
+"Vegan Honey Panna Cotta
 2 cups full-fat coconut cream
 1/2 cup unsweetened oat milk
 1/4 cup maple syrup
@@ -115,11 +115,64 @@ exports[`recipes convert to vegan > 11-several-per-line.txt > matches the saved 
 `;
 
 exports[`recipes convert to vegan > 12-fish-tacos.txt > matches the saved vegan version 1`] = `
-"Fish Tacos
+"Vegan Fish Tacos
 1 lb battered tofu or banana blossom
 8 corn tortillas
 1/2 cup vegan mayonnaise
 1 tbsp vegan Worcestershire sauce
 2 cups shredded cabbage
 1 lime"
+`;
+
+exports[`recipes convert to vegan > 13-chicken-parmesan.txt > matches the saved vegan version 1`] = `
+"Vegan Chicken Parmesan Cutlet
+Ingredients
+1 lb. ground seitan or ground vegan turkey
+1 tsp kosher salt (Diamond Crystal kosher salt preferred)
+1 tsp garlic powder
+1 tsp onion powder
+All-purpose flour for shaping, as needed
+2 flax eggs (2 tbsp ground flaxseed + 6 tbsp water, rested 5 min), whisked
+1 full box panko breadcrumbs, use as needed — don't skimp
+Avocado oil spray
+⅓–½ cup pizza sauce, use lightly
+1 cup vegan mozzarella
+4 oz fresh vegan mozzarella, sliced
+Fresh basil leaves
+Flaky sea salt
+Olive oil for finishing
+Directions
+Prep the vegan meat
+In a bowl, mix the ground seitan with salt, garlic powder, and onion powder until just combined.
+Let it sit for a few minutes while you prep.
+Shape the vegan cutlet
+Lay out a large sheet of parchment paper and generously sprinkle it with flour.
+Place the vegan meat on top and press into a very thin, large oval, like a pounded seitan cutlet. It should be large enough to nearly fill a sheet pan.
+Lightly sprinkle flour over the top surface.
+Bread the First Side
+Brush the surface with plant milk wash.
+Cover completely with panko breadcrumbs, pressing gently so they adhere — no bare spots.
+Spray with avocado oil until the breadcrumbs are fully hydrated.
+They should look slightly saturated, not dry — this ensures they fry in the oven.
+Flip and Bread the Second Side
+Place another large sheet of parchment on top and carefully flip.
+Remove the top parchment so the uncoated side is facing up.
+Brush with plant milk wash, then fully coat with panko, pressing gently.
+Spray again with avocado oil until the breadcrumbs are fully hydrated.
+Bake and Crisp
+Lightly spray a large sheet pan with avocado oil.
+Carefully transfer the vegan cutlet from the parchment onto the sheet pan.
+Bake at 450°F in a convection oven or air fryer for 15 minutes.
+Broil for 4–5 minutes, until deeply golden brown and crispy.
+Build the vegan chicken parmesan
+Remove from the oven.
+Spoon a thin layer of pizza sauce over the vegan cutlet, leaving some crispy edges exposed.
+Sprinkle vegan mozzarella evenly, then layer with fresh vegan mozzarella slices.
+Melt the vegan cheese
+Return to the oven.
+Bake at 425°F for 5–7 minutes until melted, or broil for 2–3 minutes until bubbly and lightly golden. Watch closely.
+Finish
+Top with fresh basil.
+Drizzle lightly with olive oil and finish with flaky sea salt.
+Let sit for 1–2 minutes, then slice and serve."
 `;

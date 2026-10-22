@@ -2714,7 +2714,13 @@
     {"name": "Mushroom Bacon", "vegan_status": "vegan", "lab_note": "Crisp smoked mushroom strips", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
     {"name": "Rice Paper Bacon", "vegan_status": "vegan", "lab_note": "Marinated, baked rice paper strips", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
     {"name": "Fish Pepper", "vegan_status": "vegan", "lab_note": "A chili pepper variety", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
-    {"name": "Rice Cream", "vegan_status": "vegan", "lab_note": "Hot cereal made from ground rice", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null}
+    {"name": "Rice Cream", "vegan_status": "vegan", "lab_note": "Hot cereal made from ground rice", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
+    {"name": "Panko", "vegan_status": "vegan", "lab_note": "Japanese-style breadcrumbs: usually just flour, yeast and salt", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
+    {"name": "Panko Breadcrumbs", "vegan_status": "vegan", "lab_note": "Japanese-style breadcrumbs: usually just flour, yeast and salt", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
+    {"name": "Panko Bread Crumbs", "vegan_status": "vegan", "lab_note": "Japanese-style breadcrumbs: usually just flour, yeast and salt", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
+    {"name": "Egg Wash", "vegan_status": "non_vegan", "lab_note": "Beaten egg brushed on for colour or to make a coating stick", "swap_static": "Plant milk wash", "swap_functional": "Aquafaba", "is_complex": false, "aliases": null},
+    {"name": "Chicken Cutlet", "vegan_status": "non_vegan", "lab_note": "A thin, flattened piece of chicken breast", "swap_static": "Seitan cutlet", "swap_functional": "Pressed tofu cutlet", "is_complex": false, "aliases": "Chicken cutlets"},
+    {"name": "Pizza Sauce", "vegan_status": "unclear", "lab_note": "Usually tomato, garlic and herbs, but a few brands add cheese", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null}
   ],
   "synonyms": [
     {"alias": "Animal Fat", "ingredient_name": "Lard"},

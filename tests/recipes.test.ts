@@ -89,8 +89,8 @@ const cases: Case[] = [
       "Egg",
       "Mozzarella",
       "Parmesan",
-      "Lasagna",
-      "Noodle"
+      // "lasagna noodles" is one item, not two.
+      "Lasagna Noodles"
     ],
     has: [
       "1 lb plant-based mince",
@@ -137,6 +137,39 @@ const cases: Case[] = [
     swapped: ["Cod", "Mayonnaise", "Worcestershire Sauce"],
     has: ["1/2 cup vegan mayonnaise", "1 tbsp vegan Worcestershire sauce"],
     lacks: ["cod"]
+  },
+  {
+    // Names made of several words are one item: "panko breadcrumbs" is
+    // vegan, "chicken parmesan cutlet" is one non-vegan dish.
+    file: "13-chicken-parmesan.txt",
+    status: "non_vegan",
+    swapped: [
+      "Chicken",
+      "Turkey",
+      "Egg",
+      "Pizza Sauce",
+      "Mozzarella",
+      "Meat",
+      "Chicken Cutlet",
+      "Egg Wash",
+      "Cutlet",
+      "Chicken Parmesan",
+      "Cheese"
+    ],
+    has: [
+      // The title is the finished dish; chicken cutlet is the ingredient.
+      "Vegan Chicken Parmesan Cutlet",
+      "like a pounded seitan cutlet",
+      "1 full box panko breadcrumbs",
+      "Brush the surface with plant milk wash.",
+      "Bread the First Side"
+    ],
+    lacks: [
+      "panko vegan breadcrumbs",
+      "vegan pizza vegan sauce",
+      "flax eggs wash",
+      "vegan chicken vegan parmesan"
+    ]
   }
 ];
 
