@@ -78,7 +78,7 @@ export default function MyScansPage() {
   return (
     <main className="app-shell" style={{ backgroundColor: colors.base }}>
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
-        <NeoWindow title="My Scans" variant="vegan" size="lg">
+        <NeoWindow variant="vegan" size="lg">
           <div className="flex flex-col gap-5">
             <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
               Saved scan library.

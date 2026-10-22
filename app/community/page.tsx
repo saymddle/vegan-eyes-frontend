@@ -46,7 +46,7 @@ export default function CommunityPage() {
   return (
     <main className="app-shell" style={{ backgroundColor: colors.secondary }}>
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
-        <NeoWindow title="Community Feed" variant="maybe" size="lg">
+        <NeoWindow variant="maybe" size="lg">
           <div className="flex flex-col gap-4">
             <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
               Learn from label deep dives.
