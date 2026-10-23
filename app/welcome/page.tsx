@@ -20,9 +20,33 @@ type Slide = {
   art: React.ReactNode;
   // The art fills the card's free space, centred (the welcome logo).
   hero?: boolean;
+  // Letters cycle through these colours (the welcome title).
+  titleColors?: string[];
   background: string;
   text: string;
 };
+
+// Gives each letter the next brand colour, with a black drop shadow like the
+// logo so every colour reads on the green card.
+function ColoredTitle({ text, palette }: { text: string; palette: string[] }) {
+  let n = 0;
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true" className="[text-shadow:2px_2px_0_#000]">
+        {text.split("").map((ch, i) =>
+          ch === " " ? (
+            " "
+          ) : (
+            <span key={i} style={{ color: palette[n++ % palette.length] }}>
+              {ch}
+            </span>
+          )
+        )}
+      </span>
+    </>
+  );
+}
 
 function Glyph({ children }: { children: string }) {
   return (
@@ -38,7 +62,7 @@ function Glyph({ children }: { children: string }) {
 const slides: Slide[] = [
   {
     label: "Welcome",
-    title: "See food differently",
+    title: "Substitute your usual",
     body: "Vegan Eyes spots the animal ingredients in any recipe or food label.",
     art: (
       <Image
@@ -51,6 +75,7 @@ const slides: Slide[] = [
       />
     ),
     hero: true,
+    titleColors: [colors.white, colors.secondary, colors.alert],
     background: colors.primary,
     text: colors.white
   },
@@ -158,7 +183,14 @@ export default function WelcomePage() {
                 )}
                 <div className="flex flex-col gap-4">
                   <h1 className="text-3xl font-black uppercase leading-[0.95] min-[400px]:text-4xl tracking-[-0.04em]">
-                    {slide.title}
+                    {slide.titleColors ? (
+                      <ColoredTitle
+                        text={slide.title}
+                        palette={slide.titleColors}
+                      />
+                    ) : (
+                      slide.title
+                    )}
                   </h1>
                   <p className="text-base font-bold leading-7">{slide.body}</p>
                 </div>
