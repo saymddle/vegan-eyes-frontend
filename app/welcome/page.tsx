@@ -20,29 +20,25 @@ type Slide = {
   art: React.ReactNode;
   // The art fills the card's free space, centred (the welcome logo).
   hero?: boolean;
-  // Letters cycle through these colours (the welcome title).
+  // Each word of the title gets the next colour (the welcome title).
   titleColors?: string[];
   background: string;
   text: string;
 };
 
-// Gives each letter the next brand colour, with a black drop shadow like the
-// logo so every colour reads on the green card.
+// Gives each word its own brand colour, with a black drop shadow like the
+// logo so every colour reads on the card.
 function ColoredTitle({ text, palette }: { text: string; palette: string[] }) {
-  let n = 0;
   return (
     <>
       <span className="sr-only">{text}</span>
       <span aria-hidden="true" className="[text-shadow:2px_2px_0_#000]">
-        {text.split("").map((ch, i) =>
-          ch === " " ? (
-            " "
-          ) : (
-            <span key={i} style={{ color: palette[n++ % palette.length] }}>
-              {ch}
-            </span>
-          )
-        )}
+        {text.split(" ").map((word, i) => (
+          <span key={i} style={{ color: palette[i % palette.length] }}>
+            {i > 0 ? " " : ""}
+            {word}
+          </span>
+        ))}
       </span>
     </>
   );
@@ -75,8 +71,8 @@ const slides: Slide[] = [
       />
     ),
     hero: true,
-    titleColors: [colors.white, colors.secondary, colors.alert],
-    background: colors.primary,
+    titleColors: [colors.primary, colors.white, colors.alert],
+    background: colors.alert,
     text: colors.white
   },
   {
