@@ -71,7 +71,7 @@ const slides: Slide[] = [
       />
     ),
     hero: true,
-    titleColors: [colors.primary, colors.white, colors.alert],
+    titleColors: [colors.primary, colors.white, colors.secondary],
     background: colors.alert,
     text: colors.white
   },
