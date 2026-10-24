@@ -18,9 +18,31 @@ type Slide = {
   title: string;
   body: string;
   art: React.ReactNode;
+  // The art fills the card's free space, centred (the welcome logo).
+  hero?: boolean;
+  // Each word of the title gets the next colour (the welcome title).
+  titleColors?: string[];
   background: string;
   text: string;
 };
+
+// Gives each word its own brand colour, with a black drop shadow like the
+// logo so every colour reads on the card.
+function ColoredTitle({ text, palette }: { text: string; palette: string[] }) {
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true" className="[text-shadow:2px_2px_0_#000]">
+        {text.split(" ").map((word, i) => (
+          <span key={i} style={{ color: palette[i % palette.length] }}>
+            {i > 0 ? " " : ""}
+            {word}
+          </span>
+        ))}
+      </span>
+    </>
+  );
+}
 
 function Glyph({ children }: { children: string }) {
   return (
@@ -36,19 +58,21 @@ function Glyph({ children }: { children: string }) {
 const slides: Slide[] = [
   {
     label: "Welcome",
-    title: "See food differently",
+    title: "Substitute your usual",
     body: "Vegan Eyes spots the animal ingredients in any recipe or food label.",
     art: (
       <Image
-        src="/logo.png"
+        src="/icon-512.png"
         alt=""
-        width={80}
-        height={80}
+        width={224}
+        height={224}
         priority
-        className="min-[400px]:h-24 min-[400px]:w-24"
+        className="h-40 w-40 min-[400px]:h-56 min-[400px]:w-56 [@media(max-height:640px)]:h-28 [@media(max-height:640px)]:w-28"
       />
     ),
-    background: colors.primary,
+    hero: true,
+    titleColors: [colors.primary, colors.white, colors.secondary],
+    background: colors.alert,
     text: colors.white
   },
   {
@@ -144,12 +168,25 @@ export default function WelcomePage() {
                 className="flex h-full min-h-[240px] flex-col justify-between gap-6 border-[3px] border-[#000000] p-6 shadow-[8px_8px_0px_#000000]"
                 style={{ backgroundColor: slide.background, color: slide.text }}
               >
-                <div className="flex h-20 items-center min-[400px]:h-28 [@media(max-height:640px)]:hidden">
-                  {slide.art}
-                </div>
+                {slide.hero ? (
+                  <div className="flex flex-1 items-center justify-center">
+                    {slide.art}
+                  </div>
+                ) : (
+                  <div className="flex h-20 items-center min-[400px]:h-28 [@media(max-height:640px)]:hidden">
+                    {slide.art}
+                  </div>
+                )}
                 <div className="flex flex-col gap-4">
                   <h1 className="text-3xl font-black uppercase leading-[0.95] min-[400px]:text-4xl tracking-[-0.04em]">
-                    {slide.title}
+                    {slide.titleColors ? (
+                      <ColoredTitle
+                        text={slide.title}
+                        palette={slide.titleColors}
+                      />
+                    ) : (
+                      slide.title
+                    )}
                   </h1>
                   <p className="text-base font-bold leading-7">{slide.body}</p>
                 </div>
