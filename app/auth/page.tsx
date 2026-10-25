@@ -97,18 +97,18 @@ export default function AuthPage() {
   }
 
   const inputClass =
-    "w-full border-[3px] border-[#000000] bg-white px-3 py-3 text-base font-bold text-black outline-none";
+    "w-full rounded-xl border-2 border-[#20251F] bg-white px-3 py-3 text-base font-medium text-[#20251F] outline-none focus:border-[#214E34]";
 
   if (signedInAs) {
     return (
-      <main className="app-shell" style={{ backgroundColor: colors.base }}>
+      <main className="app-shell">
         <div className="mx-auto flex max-w-[500px] flex-col gap-6">
           <NeoWindow title="Account" variant="vegan" size="lg">
             <div className="flex flex-col gap-4">
-              <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
+              <h1 className="text-[36px] leading-[1.05]">
                 Signed in.
               </h1>
-              <p className="break-all text-sm font-bold uppercase tracking-[0.04em]">
+              <p className="break-all text-sm font-semibold">
                 {signedInAs}
               </p>
               <NeoButton href="/" tone="base">
@@ -125,7 +125,7 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.base }}>
+    <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <NeoWindow
           title={mode === "sign_in" ? "Sign In" : "Create Account"}
@@ -133,10 +133,10 @@ export default function AuthPage() {
           size="lg"
         >
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
+            <h1 className="text-[36px] leading-[1.05]">
               {mode === "sign_in" ? "Welcome back." : "Join Vegan Eyes."}
             </h1>
-            <p className="text-sm font-bold uppercase leading-6 tracking-[0.04em]">
+            <p className="text-[15px] font-medium leading-6">
               Sign in to save your vegan recipes and scans.{" "}
               <Link
                 href="/privacy"
@@ -146,7 +146,7 @@ export default function AuthPage() {
               </Link>
             </p>
 
-            <label className="flex flex-col gap-2 text-xs font-black uppercase tracking-[0.08em]">
+            <label className="flex flex-col gap-2 text-xs font-bold">
               Email
               <input
                 type="email"
@@ -158,7 +158,7 @@ export default function AuthPage() {
               />
             </label>
 
-            <label className="flex flex-col gap-2 text-xs font-black uppercase tracking-[0.08em]">
+            <label className="flex flex-col gap-2 text-xs font-bold">
               Password
               <input
                 type="password"
@@ -175,7 +175,7 @@ export default function AuthPage() {
 
             {error ? (
               <p
-                className="border-[3px] border-[#000000] p-3 text-sm font-black uppercase tracking-[0.04em]"
+                className="border-2 border-[#20251F] p-3 text-sm font-semibold rounded-xl"
                 style={{ backgroundColor: colors.alert, color: colors.white }}
               >
                 {error}
@@ -184,7 +184,7 @@ export default function AuthPage() {
 
             {notice ? (
               <p
-                className="border-[3px] border-[#000000] p-3 text-sm font-black uppercase tracking-[0.04em]"
+                className="border-2 border-[#20251F] p-3 text-sm font-semibold rounded-xl"
                 style={{ backgroundColor: colors.secondary, color: colors.black }}
               >
                 {notice}
@@ -205,7 +205,7 @@ export default function AuthPage() {
                 setMode(mode === "sign_in" ? "sign_up" : "sign_in");
                 setError("");
               }}
-              className="min-h-[44px] text-sm font-black uppercase underline tracking-[0.04em]"
+              className="min-h-[44px] text-sm font-bold underline"
             >
               {mode === "sign_in"
                 ? "New here? Create an account"

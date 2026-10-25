@@ -159,7 +159,7 @@ export default function Walkthrough({
       {/* Blocks taps on the dimmed page; tapping it does nothing. */}
       <div className="absolute inset-0" />
       <div
-        className="pointer-events-none absolute border-[3px] border-[#000000] transition-all duration-200"
+        className="pointer-events-none absolute border-2 border-[#20251F] transition-all duration-200 rounded-xl"
         style={{
           top: box.top,
           left: box.left,
@@ -173,7 +173,7 @@ export default function Walkthrough({
         role="dialog"
         aria-labelledby="walkthrough-title"
         tabIndex={-1}
-        className="absolute border-[3px] border-[#000000] p-4 shadow-[6px_6px_0px_#000000] outline-none"
+        className="absolute border-2 border-[#20251F] p-5 shadow-[4px_4px_0px_#20251F] outline-none rounded-2xl"
         style={{
           top,
           left,
@@ -182,16 +182,16 @@ export default function Walkthrough({
           color: colors.black
         }}
       >
-        <p className="text-[11px] font-black uppercase tracking-[0.08em] opacity-70">
+        <p className="text-xs font-bold tracking-[0.08em] text-[#214E34] uppercase">
           Step {stepIndex + 1} of {active.length}
         </p>
         <h2
           id="walkthrough-title"
-          className="mt-1 text-lg font-black uppercase leading-tight tracking-[0.02em]"
+          className="mt-1 text-[22px] leading-tight"
         >
           {step.title}
         </h2>
-        <p className="mt-2 text-sm font-bold leading-6">{step.body}</p>
+        <p className="mt-2 text-sm font-semibold leading-6">{step.body}</p>
         {step.extra ? <div className="mt-3">{step.extra}</div> : null}
         <div className="mt-4 flex items-center justify-between gap-3">
           {isLast ? (
@@ -200,7 +200,7 @@ export default function Walkthrough({
             <button
               type="button"
               onClick={finish}
-              className="min-h-[44px] px-1 text-xs font-black uppercase tracking-[0.08em] underline underline-offset-4"
+              className="min-h-[44px] px-1 text-sm font-bold underline underline-offset-4"
             >
               Skip tour
             </button>
@@ -210,7 +210,7 @@ export default function Walkthrough({
             onClick={() =>
               isLast ? finish() : setStepIndex((current) => current + 1)
             }
-            className="min-h-[44px] border-[3px] border-[#000000] px-5 text-sm font-black uppercase tracking-[0.08em] shadow-[3px_3px_0px_#000000]"
+            className="min-h-[44px] border-2 border-[#20251F] px-5 text-sm font-bold shadow-[3px_3px_0px_#20251F] rounded-xl"
             style={{ backgroundColor: colors.primary, color: colors.white }}
           >
             {isLast ? "Got it" : "Next"}

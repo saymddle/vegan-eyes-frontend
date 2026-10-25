@@ -1,9 +1,18 @@
+// Vegan Eyes brand palette (Modern Organic). The older key names stay so
+// existing screens keep working: primary = forest, secondary = butter,
+// base = cream, alert = tomato, black = ink.
 export const colors = {
-  primary: "#4F602C",
-  secondary: "#A78F33",
-  base: "#DEE1E0",
-  alert: "#965145",
-  neutralDark: "#474238",
-  black: "#000000",
-  white: "#FFFFFF"
+  primary: "#214E34",
+  secondary: "#F5CF61",
+  base: "#FFF7E8",
+  alert: "#E65A43",
+  neutralDark: "#5B6158",
+  black: "#20251F",
+  white: "#FFFFFF",
+  forest: "#214E34",
+  cream: "#FFF7E8",
+  leaf: "#A9D94C",
+  tomato: "#E65A43",
+  butter: "#F5CF61",
+  ink: "#20251F"
 };

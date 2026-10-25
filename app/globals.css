@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
+/* Vegan Eyes brand: Modern Organic. Cream ground, ink outlines, forest
+   and leaf greens, tomato and butter accents. Lilita One for headlines,
+   Inter for everything else. */
 :root {
-  color: #000000;
-  background: #DEE1E0;
+  --forest: #214E34;
+  --cream: #FFF7E8;
+  --leaf: #A9D94C;
+  --tomato: #E65A43;
+  --butter: #F5CF61;
+  --ink: #20251F;
+  --muted: #5B6158;
+  color: var(--ink);
+  background: var(--cream);
 }
 
 * {
@@ -16,44 +26,67 @@ body {
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  color: #000000;
-  background: #DEE1E0;
+  font-family: var(--font-inter), "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
 }
 
-::selection {
-  background: #A78F33;
-  color: #000000;
+@layer base {
+  h1,
+  h2,
+  .font-display {
+    font-family: var(--font-display), "Lilita One", "Arial Rounded MT Bold", sans-serif;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--forest);
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: var(--leaf);
+    color: var(--ink);
+  }
 }
 
+:focus-visible {
+  outline: 3px solid var(--forest);
+  outline-offset: 2px;
+}
+
+/* Sections sit straight on the cream ground. Only boxed ones
+   (verdicts, errors, swap cards) get an outline. */
 .neo-window {
-  border: 3px solid #000000;
-  transform: translate(-4px, -4px);
-  transition: all 0.2s ease;
+  color: var(--ink);
 }
 
-.neo-window:hover {
-  transform: translate(-2px, -2px);
+.neo-window.boxed {
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 4px 4px 0 var(--ink);
 }
 
 .neo-head {
-  background: #DEE1E0;
-  border-bottom: 3px solid #000000;
-  color: #000000;
-  font-weight: 900;
-  padding: 6px 10px;
+  color: var(--forest);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  padding-bottom: 8px;
+}
+
+.neo-window.boxed .neo-head {
+  color: inherit;
 }
 
 .neo-content {
-  font-weight: 600;
-  padding-top: 16px;
+  font-weight: 500;
 }
 
 .app-shell {
   min-height: 100vh;
-  padding: 24px 24px 180px;
+  padding: 24px 20px 140px;
+  background: var(--cream);
 }
 
 .ingredient {
@@ -63,7 +96,6 @@ body {
   align-items: center;
   padding: 8px;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 .ingredient.low {

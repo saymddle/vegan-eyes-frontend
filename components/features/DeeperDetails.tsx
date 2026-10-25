@@ -56,7 +56,7 @@ export default function DeeperDetails({
   }
 
   return (
-    <div className="flex flex-col gap-3 text-sm font-bold uppercase leading-6 tracking-[0.04em]">
+    <div className="flex flex-col gap-3 text-sm font-bold leading-6">
       <p>Why: {why}</p>
       <p>
         Complexity:{" "}

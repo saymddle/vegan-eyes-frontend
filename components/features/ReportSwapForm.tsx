@@ -37,7 +37,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
 
   if (state === "sent") {
     return (
-      <p className="text-xs font-black uppercase tracking-[0.04em]">
+      <p className="text-xs font-semibold">
         Thanks. We&apos;ll review this swap.
       </p>
     );
@@ -48,7 +48,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="min-h-[44px] self-start text-xs font-black uppercase tracking-[0.04em] underline underline-offset-4"
+        className="min-h-[44px] self-start text-sm font-bold underline underline-offset-4"
       >
         Report a wrong swap
       </button>
@@ -56,11 +56,11 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
   }
 
   return (
-    <fieldset className="flex flex-col gap-2 border-t-2 border-[#000000] pt-3">
+    <fieldset className="flex flex-col gap-2 border-t-2 border-[#20251F] pt-3">
       <legend className="sr-only">
         What&apos;s wrong with the {ingredient} swap?
       </legend>
-      <p className="text-xs font-black uppercase tracking-[0.04em]">
+      <p className="text-xs font-semibold">
         What&apos;s wrong with this swap?
       </p>
       {reasons.map((option) => (
@@ -85,11 +85,11 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
         maxLength={500}
         rows={2}
         placeholder="Optional: what would you use instead?"
-        className="w-full border-2 border-[#000000] p-2 text-sm outline-none"
+        className="w-full border-2 border-[#20251F] p-2 text-sm outline-none rounded-xl"
         style={{ backgroundColor: colors.white, color: colors.black }}
       />
       {state === "failed" ? (
-        <p className="text-xs font-black" style={{ color: colors.alert }}>
+        <p className="text-xs font-semibold" style={{ color: colors.alert }}>
           Couldn&apos;t send the report. Try again.
         </p>
       ) : null}
@@ -98,7 +98,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
           type="button"
           onClick={submit}
           disabled={state === "sending"}
-          className="min-h-[44px] border-2 border-[#000000] px-3 text-xs font-black uppercase tracking-[0.04em]"
+          className="min-h-[44px] border-2 border-[#20251F] px-3 text-xs font-bold rounded-xl"
           style={{ backgroundColor: colors.black, color: colors.white }}
         >
           {state === "sending" ? "Sending..." : "Send report"}
@@ -106,7 +106,7 @@ export default function ReportSwapForm({ ingredient, onSubmit }: Props) {
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="min-h-[44px] px-3 text-xs font-black uppercase tracking-[0.04em] underline underline-offset-4"
+          className="min-h-[44px] px-3 text-sm font-bold underline underline-offset-4"
         >
           Cancel
         </button>

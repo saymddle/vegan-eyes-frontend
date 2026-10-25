@@ -35,9 +35,9 @@ export function highlightIngredients(
   for (const item of ingredients) {
     const style =
       item.status === "not_vegan"
-        ? `background-color:${colors.alert};color:${colors.white};`
+        ? `background-color:${colors.alert};color:${colors.ink};border-radius:4px;`
         : item.status === "maybe"
-          ? `background-color:${colors.secondary};color:${colors.black};`
+          ? `background-color:${colors.secondary};color:${colors.ink};border-radius:4px;`
           : "";
     if (!style || !item.name.trim()) continue;
     styles.set(item.name.toLowerCase(), { name: item.name, style });
@@ -59,7 +59,7 @@ export function highlightIngredients(
     );
     if (!entry) return found;
     return `<span data-ingredient="${escapeHtml(entry.name)}" class="inline-block px-1 font-bold cursor-pointer underline transition-all duration-200 ease-out ${
-      focusedIngredient === entry.name ? "ring-2 ring-[#000000] scale-105" : ""
+      focusedIngredient === entry.name ? "ring-2 ring-[#20251F] scale-105" : ""
     }" style="${entry.style}">${found}</span>`;
   });
 }

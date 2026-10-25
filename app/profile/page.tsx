@@ -28,7 +28,7 @@ function topSwaps(recipes: SavedRecipe[]) {
 }
 
 const inputClass =
-  "w-full border-[3px] border-[#000000] bg-white px-3 py-3 text-base font-bold text-black outline-none";
+  "w-full rounded-xl border-2 border-[#20251F] bg-white px-3 py-3 text-base font-medium text-[#20251F] outline-none focus:border-[#214E34]";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -105,22 +105,22 @@ export default function ProfilePage() {
   );
 
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.base }}>
+    <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <NeoWindow variant="vegan" size="lg">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full border-[3px] border-[#000000] bg-[#DEE1E0]" />
+            <div className="h-16 w-16 rounded-full border-2 border-[#20251F] bg-[#FFF7E8]" />
             <div className="flex flex-col gap-2">
-              <h1 className="break-all text-2xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
+              <h1 className="break-all text-2xl leading-[1.05]">
                 {displayName || (email ? email.split("@")[0] : "Guest")}
               </h1>
-              <p className="break-all text-sm font-bold uppercase tracking-[0.08em]">
+              <p className="break-all text-sm font-semibold">
                 {email ?? "Your account"}
               </p>
             </div>
           </div>
           {bio ? (
-            <p className="mt-4 text-sm font-bold leading-6">{bio}</p>
+            <p className="mt-4 text-sm font-semibold leading-6">{bio}</p>
           ) : null}
         </NeoWindow>
 
@@ -129,25 +129,25 @@ export default function ProfilePage() {
             title="Scans"
             variant="maybe"
             size="sm"
-            className="min-w-0 [&_.neo-head]:px-1.5 [&_.neo-head]:text-[10px] [&_.neo-head]:tracking-normal min-[400px]:[&_.neo-head]:px-2.5 min-[400px]:[&_.neo-head]:text-base"
+            className="min-w-0 [&_.neo-head]:px-1.5 [&_.neo-head]:text-[10px] [&_.neo-head]: min-[400px]:[&_.neo-head]:px-2.5 min-[400px]:[&_.neo-head]:text-base"
           >
-            <p className="text-4xl font-black uppercase">{scans.length}</p>
+            <p className="text-4xl font-semibold">{scans.length}</p>
           </NeoWindow>
           <NeoWindow
             title="Recipes"
             variant="maybe"
             size="sm"
-            className="min-w-0 [&_.neo-head]:px-1.5 [&_.neo-head]:text-[10px] [&_.neo-head]:tracking-normal min-[400px]:[&_.neo-head]:px-2.5 min-[400px]:[&_.neo-head]:text-base"
+            className="min-w-0 [&_.neo-head]:px-1.5 [&_.neo-head]:text-[10px] [&_.neo-head]: min-[400px]:[&_.neo-head]:px-2.5 min-[400px]:[&_.neo-head]:text-base"
           >
-            <p className="text-4xl font-black uppercase">{recipes.length}</p>
+            <p className="text-4xl font-semibold">{recipes.length}</p>
           </NeoWindow>
           <NeoWindow
             title="Swaps"
             variant="maybe"
             size="sm"
-            className="min-w-0 [&_.neo-head]:px-1.5 [&_.neo-head]:text-[10px] [&_.neo-head]:tracking-normal min-[400px]:[&_.neo-head]:px-2.5 min-[400px]:[&_.neo-head]:text-base"
+            className="min-w-0 [&_.neo-head]:px-1.5 [&_.neo-head]:text-[10px] [&_.neo-head]: min-[400px]:[&_.neo-head]:px-2.5 min-[400px]:[&_.neo-head]:text-base"
           >
-            <p className="text-4xl font-black uppercase">{swapCount}</p>
+            <p className="text-4xl font-semibold">{swapCount}</p>
           </NeoWindow>
         </div>
 
@@ -157,7 +157,7 @@ export default function ProfilePage() {
               {mostSwapped.map(([name, count]) => (
                 <li
                   key={name}
-                  className="flex justify-between text-sm font-black uppercase tracking-[0.04em]"
+                  className="flex justify-between text-sm font-bold"
                 >
                   <span>{name}</span>
                   <span>{count}x</span>
@@ -165,7 +165,7 @@ export default function ProfilePage() {
               ))}
             </ol>
           ) : (
-            <p className="text-sm font-bold uppercase tracking-[0.04em]">
+            <p className="text-sm font-semibold">
               Save a converted recipe to see what you swap most.
             </p>
           )}
@@ -174,7 +174,7 @@ export default function ProfilePage() {
         <NeoWindow title="Edit Profile" variant="maybe" size="md">
           {isEditing ? (
             <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
-              <label className="flex flex-col gap-2 text-xs font-black uppercase tracking-[0.08em]">
+              <label className="flex flex-col gap-2 text-xs font-bold">
                 Display name
                 <input
                   value={displayName}
@@ -183,7 +183,7 @@ export default function ProfilePage() {
                   className={inputClass}
                 />
               </label>
-              <label className="flex flex-col gap-2 text-xs font-black uppercase tracking-[0.08em]">
+              <label className="flex flex-col gap-2 text-xs font-bold">
                 Bio
                 <textarea
                   value={bio}
@@ -194,7 +194,7 @@ export default function ProfilePage() {
                 />
               </label>
               {saveError ? (
-                <p className="text-sm font-black uppercase tracking-[0.04em]">
+                <p className="text-sm font-semibold">
                   {saveError}
                 </p>
               ) : null}
@@ -219,15 +219,15 @@ export default function ProfilePage() {
 
         <Link
           href="/account/delete"
-          className="inline-flex min-h-[44px] items-center self-center px-2 text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
-          style={{ color: "#7a4137" }}
+          className="inline-flex min-h-[44px] items-center self-center px-2 text-sm font-bold underline underline-offset-4"
+          style={{ color: "#20251F" }}
         >
           Delete account
         </Link>
 
         <Link
           href="/privacy"
-          className="inline-flex min-h-[44px] items-center self-center px-2 text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
+          className="inline-flex min-h-[44px] items-center self-center px-2 text-sm font-bold underline underline-offset-4"
         >
           Privacy
         </Link>

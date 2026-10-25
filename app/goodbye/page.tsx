@@ -4,10 +4,10 @@ import { colors } from "@/lib/theme/colors";
 
 export default function GoodbyePage() {
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.base }}>
+    <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <NeoWindow title="Account deleted" variant="vegan" size="lg">
-          <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
+          <h1 className="text-[36px] leading-[1.05]">
             We miss you already!
           </h1>
         </NeoWindow>

@@ -18,17 +18,44 @@ type Slide = {
   title: string;
   body: string;
   art: React.ReactNode;
+  // The art fills the card's free space, centred (the welcome logo).
+  hero?: boolean;
+  // Each word of the title gets the next colour (the welcome title).
+  titleColors?: string[];
   background: string;
   text: string;
+  // Title colour when the title is one colour.
+  heading?: string;
 };
 
-function Glyph({ children }: { children: string }) {
+// Gives each word its own brand colour, with a black drop shadow like the
+// logo so every colour reads on the card.
+function ColoredTitle({ text, palette }: { text: string; palette: string[] }) {
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true" className="[text-shadow:2px_2px_0_#20251F]">
+        {text.split(" ").map((word, i) => (
+          <span key={i} style={{ color: palette[i % palette.length] }}>
+            {i > 0 ? " " : ""}
+            {word}
+          </span>
+        ))}
+      </span>
+    </>
+  );
+}
+
+// A white rounded badge holding a line icon.
+function Glyph({ children }: { children: React.ReactNode }) {
   return (
     <span
       aria-hidden="true"
-      className="text-6xl leading-none min-[400px]:text-7xl"
+      className="flex h-[72px] w-[72px] items-center justify-center rounded-[20px] border-2 border-[#20251F] bg-white text-[#214E34] shadow-[2px_2px_0px_#20251F]"
     >
-      {children}
+      <svg viewBox="0 0 24 24" className="h-9 w-9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        {children}
+      </svg>
     </span>
   );
 }
@@ -36,44 +63,62 @@ function Glyph({ children }: { children: string }) {
 const slides: Slide[] = [
   {
     label: "Welcome",
-    title: "See food differently",
+    title: "Substitute your usual",
     body: "Vegan Eyes spots the animal ingredients in any recipe or food label.",
     art: (
       <Image
-        src="/logo.png"
+        src="/icon-512.png"
         alt=""
-        width={80}
-        height={80}
+        width={224}
+        height={224}
         priority
-        className="min-[400px]:h-24 min-[400px]:w-24"
+        className="h-40 w-40 min-[400px]:h-56 min-[400px]:w-56 [@media(max-height:640px)]:h-28 [@media(max-height:640px)]:w-28"
       />
     ),
-    background: colors.primary,
-    text: colors.white
+    hero: true,
+    titleColors: [colors.primary, colors.white, colors.secondary],
+    background: colors.alert,
+    text: colors.ink
   },
   {
     label: "Scan or paste",
     title: "Scan or paste a recipe",
     body: "Snap a photo of a cookbook page or label, or paste a recipe from any website.",
-    art: <Glyph>📷</Glyph>,
+    art: (
+      <Glyph>
+        <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+        <circle cx="12" cy="13" r="3.5" />
+      </Glyph>
+    ),
     background: colors.secondary,
-    text: colors.black
+    text: colors.ink,
+    heading: colors.forest
   },
   {
     label: "Go vegan",
     title: "Get the vegan version",
     body: "Every animal ingredient gets a plant-based swap. Tap a swap to pick another or keep the original.",
-    art: <Glyph>🌱</Glyph>,
-    background: colors.alert,
-    text: colors.white
+    art: (
+      <Glyph>
+        <path d="M5 19C5 10 10 5 20 4c0 10-5 15-14 15zM5 19l8-8" />
+      </Glyph>
+    ),
+    background: colors.forest,
+    text: colors.cream,
+    heading: colors.leaf
   },
   {
     label: "Save",
     title: "Keep your favourites",
     body: "Make a free account to save recipes to your Library, then copy, share or print them.",
-    art: <Glyph>📚</Glyph>,
+    art: (
+      <Glyph>
+        <path d="M6 3h12v18l-6-4-6 4z" />
+      </Glyph>
+    ),
     background: colors.white,
-    text: colors.black
+    text: colors.ink,
+    heading: colors.forest
   }
 ];
 
@@ -83,6 +128,9 @@ export default function WelcomePage() {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [index, setIndex] = useState(0);
   const isLast = index === slides.length - 1;
+  // The whole screen takes the colour of the slide in view.
+  const current = slides[index];
+  const onDark = current.background === colors.forest;
 
   function goTo(next: number) {
     const track = trackRef.current;
@@ -107,8 +155,8 @@ export default function WelcomePage() {
 
   return (
     <main
-      className="flex min-h-[calc(100dvh-59px)] flex-col px-6 pb-6 pt-2"
-      style={{ backgroundColor: colors.base }}
+      className="flex min-h-[calc(100dvh-58px)] flex-col px-6 pb-6 pt-2 transition-colors duration-300"
+      style={{ backgroundColor: current.background, color: current.text }}
     >
       <div className="mx-auto flex w-full max-w-[500px] flex-1 flex-col gap-4">
         <div className="flex justify-end">
@@ -118,7 +166,7 @@ export default function WelcomePage() {
             <button
               type="button"
               onClick={() => finish("/")}
-              className="min-h-[44px] px-2 text-xs font-black uppercase tracking-[0.08em] underline underline-offset-4"
+              className="min-h-[44px] px-2 text-sm font-bold underline underline-offset-4"
             >
               Skip
             </button>
@@ -141,17 +189,35 @@ export default function WelcomePage() {
               aria-hidden={i !== index}
             >
               <div
-                className="flex h-full min-h-[240px] flex-col justify-between gap-6 border-[3px] border-[#000000] p-6 shadow-[8px_8px_0px_#000000]"
-                style={{ backgroundColor: slide.background, color: slide.text }}
+                className="flex h-full min-h-[240px] flex-col justify-between gap-6 py-2"
+                style={{ color: slide.text }}
               >
-                <div className="flex h-20 items-center min-[400px]:h-28 [@media(max-height:640px)]:hidden">
-                  {slide.art}
-                </div>
+                {slide.hero ? (
+                  <div className="flex flex-1 items-center justify-center">
+                    {slide.art}
+                  </div>
+                ) : (
+                  <div className="flex h-20 items-center min-[400px]:h-28 [@media(max-height:640px)]:hidden">
+                    {slide.art}
+                  </div>
+                )}
                 <div className="flex flex-col gap-4">
-                  <h1 className="text-3xl font-black uppercase leading-[0.95] min-[400px]:text-4xl tracking-[-0.04em]">
-                    {slide.title}
+                  <h1
+                    className={`text-[34px] leading-[1.05] min-[400px]:text-[40px] ${
+                      slide.titleColors ? "uppercase" : ""
+                    }`}
+                    style={slide.heading ? { color: slide.heading } : undefined}
+                  >
+                    {slide.titleColors ? (
+                      <ColoredTitle
+                        text={slide.title}
+                        palette={slide.titleColors}
+                      />
+                    ) : (
+                      slide.title
+                    )}
                   </h1>
-                  <p className="text-base font-bold leading-7">{slide.body}</p>
+                  <p className="text-[17px] font-semibold leading-7">{slide.body}</p>
                 </div>
               </div>
             </section>
@@ -170,11 +236,12 @@ export default function WelcomePage() {
               className="flex h-11 w-11 items-center justify-center"
             >
               <span
-                className={`block h-3 border-2 border-[#000000] transition-all ${
+                className={`block h-3 border-2 border-[#20251F] transition-all ${
                   i === index ? "w-7" : "w-3"
-                }`}
+                } rounded-xl`}
                 style={{
-                  backgroundColor: i === index ? colors.black : colors.white
+                  backgroundColor:
+                    i === index ? (onDark ? colors.leaf : colors.forest) : colors.white
                 }}
               />
             </button>
@@ -200,7 +267,7 @@ export default function WelcomePage() {
         ) : (
           <NeoButton
             onClick={() => goTo(index + 1)}
-            tone="secondary"
+            tone={onDark ? "secondary" : "primary"}
             className="w-full py-3 text-lg"
           >
             Next

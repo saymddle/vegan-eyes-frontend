@@ -21,9 +21,10 @@ export default function BackButton({ label = "Back", fallback = "/" }: Props) {
     <button
       type="button"
       onClick={goBack}
-      className="min-h-[44px] self-start border-2 border-[#000000] bg-[#DEE1E0] px-3 py-1 text-xs font-black uppercase tracking-[0.06em] shadow-[3px_3px_0_#000000] transition-all hover:translate-x-[1px] hover:translate-y-[1px]"
+      className="inline-flex min-h-[44px] items-center gap-1 self-start pr-2 text-[15px] font-bold text-[#214E34] hover:underline"
     >
-      ← {label}
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
+      {label}
     </button>
   );
 }

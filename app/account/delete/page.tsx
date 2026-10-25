@@ -43,19 +43,19 @@ export default function DeleteAccountPage() {
   }
 
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.base }}>
+    <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <BackButton label="Profile" fallback="/profile" />
         <NeoWindow title="Delete account" variant="not_vegan" size="lg">
           <form onSubmit={handleDelete} className="flex flex-col gap-4">
-            <h1 className="text-4xl font-black uppercase leading-[0.95] tracking-[-0.04em]">
+            <h1 className="text-[34px] leading-[1.05]">
               Leaving Vegan Eyes?
             </h1>
-            <p className="text-sm font-bold leading-6">
+            <p className="text-[15px] font-medium leading-6">
               This deletes your account and everything saved with it: your
               recipes, scans, notes and profile. It can&apos;t be undone.
             </p>
-            <label className="flex flex-col gap-2 text-xs font-black uppercase tracking-[0.08em]">
+            <label className="flex flex-col gap-2 text-xs font-bold">
               Type “{DELETE_PHRASE}” to confirm
               <input
                 value={phrase}
@@ -64,12 +64,12 @@ export default function DeleteAccountPage() {
                 autoCapitalize="off"
                 spellCheck={false}
                 placeholder={DELETE_PHRASE}
-                className="min-h-[48px] border-[3px] border-[#000000] bg-white px-3 text-base font-bold normal-case tracking-normal text-black"
+                className="min-h-[48px] border-2 border-[#20251F] bg-white px-3 text-base font-bold normal-case text-black rounded-xl"
               />
             </label>
             {error ? (
               <p
-                className="border-[3px] border-[#000000] p-3 text-sm font-black uppercase tracking-[0.04em]"
+                className="border-2 border-[#20251F] p-3 text-sm font-semibold rounded-xl"
                 style={{ backgroundColor: colors.white, color: colors.black }}
                 role="alert"
               >
