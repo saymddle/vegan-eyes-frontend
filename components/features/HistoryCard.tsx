@@ -21,10 +21,10 @@ export default function HistoryCard({ createdAt, input, result, onOpen }: Props)
   return (
     <NeoWindow title={labelMap[result.status]} variant={result.status} size="sm">
       <div className="flex flex-col gap-4">
-        <p className="line-clamp-3 text-sm font-bold uppercase leading-6 tracking-[0.04em]">
+        <p className="line-clamp-3 text-sm font-semibold leading-6">
           {input}
         </p>
-        <div className="flex items-center justify-between gap-4 text-xs font-black uppercase tracking-[0.12em]">
+        <div className="flex items-center justify-between gap-4 text-xs font-bold">
           <p>{new Date(createdAt).toLocaleDateString()}</p>
           <p>{result.ingredients.length} flagged</p>
         </div>

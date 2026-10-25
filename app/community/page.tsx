@@ -44,14 +44,14 @@ export default function CommunityPage() {
   }, []);
 
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.secondary }}>
+    <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <NeoWindow variant="maybe" size="lg">
           <div className="flex flex-col gap-4">
-            <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
+            <h1 className="text-[36px] leading-[1.05]">
               Learn from label deep dives.
             </h1>
-            <p className="text-sm font-bold uppercase leading-6 tracking-[0.04em]">
+            <p className="text-[15px] font-medium leading-6">
               Community education posts and quick video placeholders for vegan
               ingredient literacy.
             </p>
@@ -60,15 +60,15 @@ export default function CommunityPage() {
 
         {isLoading ? (
           <NeoWindow title="Loading" variant="maybe" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+            <p className="text-sm font-semibold">
               Loading community feed...
             </p>
           </NeoWindow>
         ) : null}
 
         {!isLoading && error ? (
-          <NeoWindow title="Error" variant="not_vegan" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+          <NeoWindow title="Error" variant="not_vegan" size="sm" boxed>
+            <p className="text-sm font-semibold">
               {error}
             </p>
           </NeoWindow>
@@ -76,7 +76,7 @@ export default function CommunityPage() {
 
         {!isLoading && !error && feed.length === 0 ? (
           <NeoWindow title="Empty" variant="maybe" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+            <p className="text-sm font-semibold">
               No community posts available yet.
             </p>
           </NeoWindow>

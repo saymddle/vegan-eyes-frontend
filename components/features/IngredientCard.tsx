@@ -29,13 +29,13 @@ export default function IngredientCard({
       id={getIngredientAnchorId(ingredient.name)}
       className={`transition-all duration-300 ease-out ${
         isActive
-          ? "relative z-20 scale-[1.04] opacity-100 shadow-[12px_12px_0_#000000]"
+          ? "relative z-20 scale-[1.04] opacity-100 shadow-[4px_4px_0px_#20251F]"
           : ""
       } ${isDimmed ? "opacity-60" : "opacity-100"}`}
     >
       <NeoWindow title={ingredient.name} variant={ingredient.status} size="sm">
         <div className="flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-4 text-sm font-black uppercase tracking-[0.08em]">
+          <div className="flex items-start justify-between gap-4 text-sm font-bold">
             <p>{statusLabel[ingredient.status]}</p>
             <p>
               {ingredient.swap ? `Swap: ${ingredient.swap}` : "No swap listed"}

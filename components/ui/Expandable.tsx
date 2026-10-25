@@ -24,7 +24,7 @@ export default function Expandable({ title = "Deeper", children }: Props) {
 
       {isOpen ? (
         <div
-          className="border-[3px] border-[#000000] p-4 shadow-[4px_4px_0px_#000000]"
+          className="rounded-2xl border-2 border-[#20251F] p-4"
           style={{ backgroundColor: colors.white, color: colors.black }}
         >
           {children}

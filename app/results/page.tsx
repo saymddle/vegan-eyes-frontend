@@ -151,10 +151,10 @@ export default function ResultsPage() {
       }
 
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-      el.classList.add("ring-4", "ring-[#000000]", "scale-[1.02]");
+      el.classList.add("ring-4", "ring-[#20251F]", "scale-[1.02]");
 
       setTimeout(() => {
-        el.classList.remove("ring-4", "ring-[#000000]", "scale-[1.02]");
+        el.classList.remove("ring-4", "ring-[#20251F]", "scale-[1.02]");
       }, 800);
     };
 
@@ -207,7 +207,7 @@ export default function ResultsPage() {
   const mainVariant = error ? "not_vegan" : (result?.status ?? "maybe");
 
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.base }}>
+    <main className="app-shell">
       {focusedIngredient ? (
         <div
           onClick={() => setFocusedIngredient(null)}
@@ -229,12 +229,12 @@ export default function ResultsPage() {
             focusedIngredient ? "opacity-60 blur-[1px]" : "opacity-100"
           }`}
         >
-          <NeoWindow title="Scan Result" variant={mainVariant} size="lg">
+          <NeoWindow title="Scan Result" variant={mainVariant} size="lg" boxed>
             <div className="flex flex-col gap-4">
-              <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
+              <h1 className="text-[44px] leading-[1] text-[#20251F]">
                 {summary.title}
               </h1>
-              <p className="text-sm font-bold uppercase leading-6 tracking-[0.04em]">
+              <p className="text-[15px] font-medium leading-6">
                 {summary.body}
               </p>
             </div>
@@ -255,7 +255,7 @@ export default function ResultsPage() {
                 colors.secondary,
                 colors.black
               ],
-              ["vegan", "Vegan", colors.primary, colors.white]
+              ["vegan", "Vegan", colors.leaf, colors.ink]
             ] as const
           ).map(([key, label, background, text]) => (
             <button
@@ -264,15 +264,15 @@ export default function ResultsPage() {
               role="tab"
               aria-selected={tab === key}
               onClick={() => setTab(key)}
-              className={`min-h-[48px] border-[3px] border-[#000000] px-3 text-sm font-black uppercase tracking-[0.08em] transition-all ${
+              className={`min-h-[48px] border-2 border-[#20251F] px-3 text-sm font-bold transition-all ${
                 tab === key
-                  ? "shadow-[4px_4px_0px_#000000]"
+                  ? "shadow-[2px_2px_0px_#20251F]"
                   : "shadow-none"
-              }`}
+              } rounded-xl`}
               style={
                 tab === key
                   ? { backgroundColor: background, color: text }
-                  : { backgroundColor: colors.base, color: colors.black }
+                  : { backgroundColor: colors.white, color: colors.ink }
               }
             >
               {label}
@@ -285,8 +285,8 @@ export default function ResultsPage() {
         </div>
 
         {isLoading ? (
-          <NeoWindow title="Loading" variant="maybe" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+          <NeoWindow title="Loading" variant="maybe" size="sm" boxed>
+            <p className="text-sm font-semibold">
               Running backend check...
             </p>
           </NeoWindow>
@@ -298,7 +298,7 @@ export default function ResultsPage() {
         !error &&
         result?.ingredients.length === 0 ? (
           <NeoWindow title="Empty" variant="vegan" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+            <p className="text-sm font-semibold">
               No flagged ingredients in this response.
             </p>
           </NeoWindow>
@@ -313,11 +313,7 @@ export default function ResultsPage() {
           >
             <div className="flex flex-col gap-4">
               <div
-                className="whitespace-pre-line border-[3px] border-[#000000] p-4 text-sm font-bold uppercase leading-7 tracking-[0.04em]"
-                style={{
-                  backgroundColor: colors.white,
-                  color: colors.black
-                }}
+                className="whitespace-pre-line text-[15px] font-medium leading-7"
                 dangerouslySetInnerHTML={{
                   __html: highlightIngredients(
                     scanInput,
@@ -326,15 +322,15 @@ export default function ResultsPage() {
                   )
                 }}
               />
-              <div className="flex flex-wrap gap-3 text-xs font-black uppercase tracking-[0.08em]">
+              <div className="flex flex-wrap gap-3 text-xs font-bold">
                 <span
-                  className="border-[3px] border-[#000000] px-2 py-1"
-                  style={{ backgroundColor: colors.alert, color: colors.white }}
+                  className="border-2 border-[#20251F] px-2 py-1 rounded-xl"
+                  style={{ backgroundColor: colors.alert, color: colors.ink }}
                 >
                   Red = Non-Vegan
                 </span>
                 <span
-                  className="border-[3px] border-[#000000] px-2 py-1"
+                  className="border-2 border-[#20251F] px-2 py-1 rounded-xl"
                   style={{
                     backgroundColor: colors.secondary,
                     color: colors.black
@@ -383,7 +379,7 @@ function ProductCard({ product }: { product: Product }) {
   const [imageFailed, setImageFailed] = useState(false);
   return (
     <div
-      className="flex items-center gap-4 border-[3px] border-[#000000] p-4 shadow-[6px_6px_0px_#000000]"
+      className="flex items-center gap-4 border-2 border-[#20251F] p-4 shadow-[4px_4px_0px_#20251F] rounded-xl"
       style={{ backgroundColor: colors.white, color: colors.black }}
     >
       {product.image && !imageFailed ? (
@@ -391,41 +387,41 @@ function ProductCard({ product }: { product: Product }) {
           src={product.image}
           alt=""
           onError={() => setImageFailed(true)}
-          className="h-20 w-20 shrink-0 border-[3px] border-[#000000] object-contain"
+          className="h-20 w-20 shrink-0 border-2 border-[#20251F] object-contain rounded-xl"
         />
       ) : (
         <span
           aria-hidden="true"
-          className="flex h-20 w-20 shrink-0 items-center justify-center border-[3px] border-[#000000] text-4xl"
+          className="flex h-20 w-20 shrink-0 items-center justify-center border-2 border-[#20251F] text-4xl rounded-xl"
         >
           📦
         </span>
       )}
       <div className="flex min-w-0 flex-col gap-1">
         {product.brand ? (
-          <p className="text-xs font-black uppercase tracking-[0.08em] opacity-80">
+          <p className="text-xs font-semibold opacity-80">
             {product.brand}
           </p>
         ) : null}
-        <h2 className="break-words text-lg font-black uppercase leading-tight">
+        <h2 className="break-words text-xl leading-tight">
           {product.name || "Unnamed product"}
         </h2>
         {product.labelledVegan ? (
           <p
-            className="self-start border-2 border-[#000000] px-2 py-0.5 text-[11px] font-black uppercase tracking-[0.08em]"
+            className="self-start border-2 border-[#20251F] px-2 py-0.5 text-[11px] font-semibold rounded-xl"
             style={{ backgroundColor: colors.primary, color: colors.white }}
           >
             Labelled vegan on the pack
           </p>
         ) : null}
         {product.traces ? (
-          <p className="text-xs font-bold leading-5">
-            <span className="font-black uppercase">Pack warning:</span>{" "}
+          <p className="text-xs font-semibold leading-5">
+            <span className="font-bold">Pack warning:</span>{" "}
             {product.traces}. That&apos;s about shared factories, not an
             ingredient, so it doesn&apos;t change the verdict.
           </p>
         ) : null}
-        <p className="text-[11px] font-bold leading-5">
+        <p className="text-[11px] font-semibold leading-5">
           Barcode {product.barcode}. Product data from{" "}
           <a
             href={`https://world.openfoodfacts.org/product/${product.barcode}`}

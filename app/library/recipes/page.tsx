@@ -67,7 +67,7 @@ export default function LibraryRecipesPage() {
   }, [recipes, search]);
 
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.base }}>
+    <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <Breadcrumb
           items={[{ label: "LIBRARY", path: "/library" }, { label: "RECIPES" }]}
@@ -75,10 +75,10 @@ export default function LibraryRecipesPage() {
 
         <NeoWindow title="Recipes" variant="vegan" size="lg">
           <div className="flex flex-col gap-4">
-            <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
+            <h1 className="text-[36px] leading-[1.05]">
               Saved recipes.
             </h1>
-            <p className="text-sm font-bold uppercase leading-6 tracking-[0.04em]">
+            <p className="text-[15px] font-medium leading-6">
               Vegan versions of the recipes you have scanned and saved.
             </p>
             {recipes.length > 0 ? (
@@ -88,7 +88,7 @@ export default function LibraryRecipesPage() {
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search by name or ingredient"
                 aria-label="Search saved recipes"
-                className="w-full border-[3px] border-[#000000] px-4 py-3 text-sm font-black uppercase tracking-[0.04em] outline-none"
+                className="w-full border-2 border-[#20251F] px-4 py-3 text-sm font-bold outline-none rounded-xl"
                 style={{ backgroundColor: colors.white, color: colors.black }}
               />
             ) : null}
@@ -97,7 +97,7 @@ export default function LibraryRecipesPage() {
 
         {isLoading ? (
           <NeoWindow title="Loading" variant="maybe" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+            <p className="text-sm font-semibold">
               Loading recipes...
             </p>
           </NeoWindow>
@@ -106,7 +106,7 @@ export default function LibraryRecipesPage() {
         {!isLoading && recipes.length === 0 ? (
           <NeoWindow title="No saved recipes yet" variant="maybe" size="sm">
             <div className="flex flex-col gap-4">
-              <p className="text-sm font-black uppercase tracking-[0.04em]">
+              <p className="text-sm font-semibold">
                 Scan a recipe, then tap Save Recipe to keep its vegan version
                 here.
               </p>
@@ -118,7 +118,7 @@ export default function LibraryRecipesPage() {
         ) : null}
 
         {!isLoading && recipes.length > 0 && visibleRecipes.length === 0 ? (
-          <p className="text-center text-sm font-black uppercase tracking-[0.04em]">
+          <p className="text-center text-sm font-semibold">
             No saved recipes match &ldquo;{search.trim()}&rdquo;.
           </p>
         ) : null}

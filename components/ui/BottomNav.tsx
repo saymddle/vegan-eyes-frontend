@@ -1,8 +1,25 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import NeoButton from "./NeoButton";
-import NeoWindow from "./NeoWindow";
+
+const icons: Record<string, React.ReactNode> = {
+  Scan: <path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M7 12h10" />,
+  Community: (
+    <>
+      <circle cx="9" cy="9" r="3" />
+      <circle cx="17" cy="10" r="2.5" />
+      <path d="M3 19c0-3 3-5 6-5s6 2 6 5M15 15c3 0 6 1.5 6 4" />
+    </>
+  ),
+  Library: <path d="M5 4h4v16H5zM10 4h4v16h-4zM15 5l4 1-3 14-4-1" />,
+  Profile: (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+    </>
+  )
+};
 
 const navItems = [
   { href: "/", label: "Scan" },
@@ -18,30 +35,38 @@ export default function BottomNav() {
   if (pathname === "/welcome") return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4">
-      <NeoWindow variant="maybe" size="sm" className="mx-auto max-w-[500px]">
-        <nav className="grid grid-cols-4 gap-1 min-[360px]:gap-2">
-          {navItems.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/" || pathname === "/scan"
-                : pathname.startsWith(item.href) ||
-                  (item.href === "/my-scans" &&
-                    pathname.startsWith("/library"));
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t-2 border-[#20251F] bg-white pb-[env(safe-area-inset-bottom)]">
+      <nav className="mx-auto grid max-w-[500px] grid-cols-4 px-2 pb-2 pt-2">
+        {navItems.map((item) => {
+          const isActive =
+            item.href === "/"
+              ? pathname === "/" || pathname === "/scan"
+              : pathname.startsWith(item.href) ||
+                (item.href === "/my-scans" && pathname.startsWith("/library"));
 
-            return (
-              <NeoButton
-                key={item.href}
-                href={item.href}
-                tone={isActive ? "primary" : "base"}
-                className="min-w-0 px-0! py-3 text-[9px] tracking-normal! min-[360px]:text-[10px] min-[360px]:tracking-[0.02em]! min-[400px]:text-xs min-[400px]:tracking-[0.04em]!"
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              className={`flex min-h-[52px] min-w-0 flex-col items-center justify-center gap-1 text-[11px] ${
+                isActive ? "font-bold text-[#214E34]" : "font-semibold text-[#20251F]"
+              }`}
+            >
+              <span
+                className={`flex h-8 w-12 items-center justify-center rounded-full ${
+                  isActive ? "border-2 border-[#20251F] bg-[#A9D94C]" : ""
+                }`}
               >
-                {item.label}
-              </NeoButton>
-            );
-          })}
-        </nav>
-      </NeoWindow>
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {icons[item.label]}
+                </svg>
+              </span>
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }

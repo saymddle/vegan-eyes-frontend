@@ -18,17 +18,17 @@ export default function WelcomeCard({ onClose }: Props) {
   return (
     <section
       id="how-it-works"
-      className="border-[3px] border-[#000000] p-4"
+      className="border-2 border-[#20251F] p-4 rounded-xl"
       style={{ backgroundColor: colors.white, color: colors.black }}
     >
-      <h2 className="text-lg font-black uppercase tracking-[0.02em]">
+      <h2 className="text-[22px]">
         Veganize your recipe
       </h2>
       <ol className="mt-3 flex flex-col gap-2 text-sm font-bold">
         {steps.map((step, i) => (
           <li key={step} className="flex gap-3">
             <span
-              className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-[#000000] text-xs font-black"
+              className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-[#20251F] text-xs font-bold rounded-xl"
               style={{ backgroundColor: colors.secondary }}
             >
               {i + 1}
@@ -41,14 +41,14 @@ export default function WelcomeCard({ onClose }: Props) {
         <button
           type="button"
           onClick={onClose}
-          className="min-h-[44px] border-2 border-[#000000] px-4 text-xs font-black uppercase tracking-[0.06em]"
-          style={{ backgroundColor: colors.black, color: colors.white }}
+          className="min-h-[44px] rounded-xl border-2 border-[#20251F] px-5 text-sm font-bold shadow-[2px_2px_0px_#20251F]"
+          style={{ backgroundColor: colors.forest, color: colors.cream }}
         >
           Close
         </button>
         <Link
           href="/welcome"
-          className="inline-flex min-h-[44px] items-center text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
+          className="inline-flex min-h-[44px] items-center text-sm font-bold underline underline-offset-4"
         >
           Replay the intro
         </Link>

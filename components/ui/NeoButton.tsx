@@ -15,20 +15,20 @@ type Props = {
 
 const toneMap = {
   primary: {
-    backgroundColor: colors.primary,
-    color: colors.white
+    backgroundColor: colors.forest,
+    color: colors.cream
   },
   secondary: {
-    backgroundColor: colors.secondary,
-    color: colors.black
+    backgroundColor: colors.butter,
+    color: colors.ink
   },
   danger: {
-    backgroundColor: colors.alert,
-    color: colors.white
+    backgroundColor: colors.tomato,
+    color: colors.ink
   },
   base: {
-    backgroundColor: colors.base,
-    color: colors.black
+    backgroundColor: colors.white,
+    color: colors.ink
   }
 };
 
@@ -41,9 +41,9 @@ export default function NeoButton({
   tone = "primary",
   className = ""
 }: Props) {
-  const base = `inline-flex items-center justify-center border-[3px] border-[#000000] px-4 py-2 font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000] transition-all hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none ${className}`;
+  const base = `inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-[#20251F] px-4 py-2 text-[15px] font-bold shadow-[2px_2px_0px_#20251F] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#20251F] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${className}`;
   const disabledClass = disabled
-    ? "pointer-events-none opacity-60"
+    ? "pointer-events-none opacity-50 shadow-none"
     : "";
 
   if (href) {

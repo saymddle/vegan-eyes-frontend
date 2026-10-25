@@ -64,7 +64,7 @@ export default function LibraryRecentPage() {
     visibleRecords[0];
 
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.base }}>
+    <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <Breadcrumb
           items={[
@@ -74,14 +74,14 @@ export default function LibraryRecentPage() {
         />
 
         <NeoWindow title="Recent" variant="vegan" size="lg">
-          <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
+          <h1 className="text-[36px] leading-[1.05]">
             Latest saved scans.
           </h1>
         </NeoWindow>
 
         {isLoading ? (
           <NeoWindow title="Loading" variant="maybe" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+            <p className="text-sm font-semibold">
               Loading recent scans...
             </p>
           </NeoWindow>
@@ -89,7 +89,7 @@ export default function LibraryRecentPage() {
 
         {!isLoading && visibleRecords.length === 0 ? (
           <NeoWindow title="No saved scans yet" variant="maybe" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+            <p className="text-sm font-semibold">
               Save a result to build your library.
             </p>
           </NeoWindow>
@@ -114,7 +114,7 @@ export default function LibraryRecentPage() {
             size="md"
           >
             <div className="flex flex-col gap-4">
-              <p className="text-sm font-black uppercase leading-6 tracking-[0.04em]">
+              <p className="text-[15px] font-medium leading-6">
                 {selectedRecord.input}
               </p>
               {selectedRecord.result.ingredients.map((ingredient, index) => (

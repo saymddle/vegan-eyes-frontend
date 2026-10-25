@@ -247,14 +247,13 @@ export default function VeganVersion() {
     <div className="flex flex-col gap-6">
       {isLoading ? (
         <section
-          className="border-[3px] border-[#000000] p-4 shadow-[8px_8px_0px_#000000]"
-          style={{ backgroundColor: colors.white }}
+          className="py-2"
           aria-busy="true"
         >
-          <p className="text-lg font-black uppercase tracking-[0.02em]">
+          <p className="text-lg font-semibold">
             Converting your recipe...
           </p>
-          <p className="mt-1 text-xs font-bold uppercase tracking-[0.04em]">
+          <p className="mt-1 text-xs font-semibold">
             Finding animal ingredients and their plant-based swaps.
           </p>
           <div className="mt-4 flex animate-pulse flex-col gap-2">
@@ -262,7 +261,7 @@ export default function VeganVersion() {
               <div
                 key={width}
                 className="h-3"
-                style={{ width: `${width}%`, backgroundColor: colors.base }}
+                style={{ width: `${width}%`, backgroundColor: "#EADFC8", borderRadius: 999 }}
               />
             ))}
           </div>
@@ -271,14 +270,14 @@ export default function VeganVersion() {
 
       {!isLoading && error ? (
         <section
-          className="border-[3px] border-[#000000] p-4 shadow-[8px_8px_0px_#000000]"
-          style={{ backgroundColor: colors.white }}
+          className="rounded-2xl border-2 border-[#20251F] p-4 shadow-[4px_4px_0px_#20251F]"
+          style={{ backgroundColor: colors.butter }}
           role="alert"
         >
-          <p className="text-lg font-black uppercase tracking-[0.02em]">
+          <p className="text-lg font-semibold">
             {source ? "Something went wrong" : "No recipe yet"}
           </p>
-          <p className="mt-1 text-sm font-bold">{error}</p>
+          <p className="mt-1 text-sm font-semibold">{error}</p>
           <div className="mt-4 flex flex-col gap-3">
             {source ? (
               <NeoButton
@@ -301,7 +300,7 @@ export default function VeganVersion() {
 
       {!isLoading && recipe && (isRewriting || hasRewrite) ? (
         <div
-          className="flex flex-wrap items-center justify-between gap-2 border-[3px] border-[#000000] px-3 py-2 text-xs font-black uppercase tracking-[0.06em]"
+          className="flex flex-wrap items-center justify-between gap-2 border-2 border-[#20251F] px-3 py-2 text-xs font-bold rounded-xl"
           style={{ backgroundColor: colors.white, color: colors.black }}
           aria-live="polite"
         >
@@ -378,12 +377,12 @@ export default function VeganVersion() {
                 </NeoButton>
               </div>
               <p
-                className="min-h-5 text-center text-xs font-black uppercase"
+                className="min-h-5 text-center text-xs font-semibold"
                 aria-live="polite"
               >
                 {notice}
               </p>
-              <div className="flex justify-center text-xs font-black uppercase tracking-[0.06em]">
+              <div className="flex justify-center text-xs font-bold">
                 <Link
                   href="/"
                   className="inline-flex min-h-[44px] items-center px-2 underline underline-offset-4"

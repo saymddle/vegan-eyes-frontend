@@ -1,5 +1,4 @@
 import NeoWindow from "@/components/ui/NeoWindow";
-import { colors } from "@/lib/theme/colors";
 
 type Props = {
   title: string;
@@ -10,20 +9,17 @@ type Props = {
 export default function FeedCard({ title, description, creator }: Props) {
   return (
     <NeoWindow title={title} variant="maybe" size="md">
-      <div className="flex flex-col gap-4">
-        <div
-          className="flex h-44 items-center justify-center border-[3px] border-[#000000] text-2xl font-black uppercase tracking-[0.1em] shadow-[6px_6px_0px_#000000]"
-          style={{
-            backgroundColor: colors.white,
-            color: colors.black
-          }}
-        >
-          Video
+      <div className="flex flex-col gap-3">
+        <div className="flex aspect-video items-center justify-center rounded-2xl border-2 border-[#20251F] bg-[#214E34]">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#20251F] bg-[#A9D94C] shadow-[2px_2px_0px_#20251F]">
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="#20251F" strokeWidth="2" strokeLinejoin="round"><path d="M8 5l11 7-11 7z" /></svg>
+            <span className="sr-only">Video</span>
+          </span>
         </div>
-        <p className="text-sm font-bold uppercase leading-6 tracking-[0.04em]">
+        <p className="text-[15px] font-medium leading-6">
           {description}
         </p>
-        <p className="text-xs font-black uppercase tracking-[0.12em]">
+        <p className="text-sm font-semibold text-[#214E34]">
           Creator: {creator}
         </p>
       </div>

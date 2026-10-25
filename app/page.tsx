@@ -48,6 +48,8 @@ export default function Home() {
   );
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [barcodeOpen, setBarcodeOpen] = useState(false);
+  // Which source button is highlighted under the camera.
+  const [fromUpload, setFromUpload] = useState(false);
   const [lookingUp, setLookingUp] = useState(false);
   const [rawText, setRawText] = useState<string>("");
   const [scanError, setScanError] = useState("");
@@ -79,7 +81,7 @@ export default function Home() {
               setMode("type");
               setTypedIngredients(SAMPLE_RECIPE);
             }}
-            className="min-h-[44px] w-full border-[3px] border-[#000000] px-3 text-xs font-black uppercase tracking-[0.08em]"
+            className="min-h-[44px] w-full border-2 border-[#20251F] px-3 text-xs font-bold rounded-xl"
             style={{ backgroundColor: colors.secondary, color: colors.black }}
           >
             Try a sample recipe
@@ -123,6 +125,7 @@ export default function Home() {
     }
 
     setImage(screenshot);
+    setFromUpload(false);
   };
 
   async function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
@@ -140,6 +143,7 @@ export default function Home() {
         setImage(upload.dataUrl);
         setPdf(null);
       }
+      setFromUpload(true);
     } catch (error) {
       setScanError(
         error instanceof Error ? error.message : "Couldn't open that file."
@@ -189,6 +193,7 @@ export default function Home() {
   function clearPicture() {
     setImage(null);
     setPdf(null);
+    setFromUpload(false);
   }
 
   async function handleScan(
@@ -255,12 +260,12 @@ export default function Home() {
   // Keeps the camera off until we know this isn't a first visit.
   if (!introSeen) {
     return (
-      <main className="app-shell" style={{ backgroundColor: colors.primary }} />
+      <main className="app-shell" />
     );
   }
 
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.primary }}>
+    <main className="app-shell">
       <Walkthrough steps={tourSteps} storageKey={SCAN_TOUR_SEEN} />
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <NeoWindow variant="vegan" size="lg">
@@ -272,7 +277,7 @@ export default function Home() {
               aria-expanded={showHelp}
               aria-controls="how-it-works"
               aria-label="How Vegan Eyes works"
-              className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#000000] text-base font-black after:absolute after:-inset-2 after:content-['']"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#20251F] text-base font-bold after:absolute after:-inset-2 after:content-['']"
               style={{
                 backgroundColor: showHelp ? colors.black : colors.white,
                 color: showHelp ? colors.white : colors.black
@@ -287,7 +292,7 @@ export default function Home() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div className="flex h-[80px] max-w-[260px] items-end">
                 <h1
-                  className={`text-4xl font-black uppercase leading-tight tracking-[-0.05em] transition-opacity duration-200 ${
+                  className={`text-[32px] uppercase leading-[1.05] transition-opacity duration-200 ${
                     visible ? "opacity-100" : "opacity-0"
                   }`}
                 >
@@ -299,11 +304,7 @@ export default function Home() {
 
             <div
               data-tour="scan-input"
-              className="border-[3px] border-[#000000] p-4 shadow-[8px_8px_0px_#000000]"
-              style={{
-                backgroundColor: colors.white,
-                color: colors.black
-              }}
+              className="rounded-2xl border-2 border-[#20251F] bg-white p-3 text-[#20251F]"
             >
               {mode === "scan" ? (
                 <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 text-center">
@@ -314,11 +315,11 @@ export default function Home() {
                       busy={lookingUp}
                     />
                   ) : pdf ? (
-                    <div className="flex min-h-[160px] w-full flex-col items-center justify-center gap-2 rounded border-[3px] border-[#000000] p-4">
+                    <div className="flex min-h-[160px] w-full flex-col items-center justify-center gap-2 rounded-xl bg-[#FFF7E8] p-4">
                       <span aria-hidden="true" className="text-5xl">
                         📄
                       </span>
-                      <span className="max-w-full break-all text-sm font-black">
+                      <span className="max-w-full break-all text-sm font-bold">
                         {pdf.name}
                       </span>
                     </div>
@@ -326,7 +327,7 @@ export default function Home() {
                     <img
                       src={image}
                       alt="Your recipe photo"
-                      className="h-full max-h-[260px] w-full rounded border-[3px] border-[#000000] object-cover"
+                      className="h-full max-h-[260px] w-full rounded-xl object-cover"
                     />
                   ) : (
                     <Webcam
@@ -336,43 +337,45 @@ export default function Home() {
                       videoConstraints={{
                         facingMode: "environment"
                       }}
-                      className="h-full max-h-[260px] w-full rounded border-[3px] border-[#000000] object-cover"
+                      className="h-full max-h-[260px] w-full rounded-xl object-cover"
                     />
                   )}
 
                   <div
-                    className={`flex w-full justify-center gap-3 ${
+                    role="group"
+                    aria-label="Picture source"
+                    className={`grid w-full grid-cols-3 gap-[2px] rounded-full border-2 border-[#20251F] bg-white p-[3px] ${
                       barcodeOpen ? "hidden" : ""
                     }`}
                   >
-                    <IconButton
-                      label={image || pdf ? "Retake" : "Take a photo"}
+                    <SourceButton
+                      label={image || pdf ? "Retake" : "Photo"}
+                      ariaLabel={image || pdf ? "Retake" : "Take a photo"}
+                      active={!barcodeOpen && !fromUpload}
                       onClick={image || pdf ? clearPicture : handleCapture}
-                      background="#f8f5ee"
-                      color={colors.black}
                     >
                       {image || pdf ? <RetakeIcon /> : <CameraIcon />}
-                    </IconButton>
-                    <IconButton
-                      label="Upload a photo or PDF"
+                    </SourceButton>
+                    <SourceButton
+                      label="Upload"
+                      ariaLabel="Upload a photo or PDF"
+                      active={!barcodeOpen && fromUpload}
                       onClick={() => fileInputRef.current?.click()}
-                      background={colors.secondary}
-                      color={colors.black}
                     >
                       <UploadIcon />
-                    </IconButton>
-                    <IconButton
-                      label="Scan a barcode"
+                    </SourceButton>
+                    <SourceButton
+                      label="Barcode"
+                      ariaLabel="Scan a barcode"
+                      active={barcodeOpen}
                       onClick={() => {
                         clearPicture();
                         setScanError("");
                         setBarcodeOpen(true);
                       }}
-                      background={colors.primary}
-                      color={colors.white}
                     >
                       <BarcodeIcon />
-                    </IconButton>
+                    </SourceButton>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -389,14 +392,14 @@ export default function Home() {
                   onChange={(event) => setTypedIngredients(event.target.value)}
                   rows={9}
                   placeholder="Paste a recipe or type ingredients: 2 eggs, 1 cup milk, butter..."
-                  className="min-h-[220px] w-full resize-none bg-transparent text-base font-black uppercase leading-7 tracking-[0.04em] outline-none placeholder:text-[#474238]/75"
+                  className="min-h-[220px] w-full resize-none bg-transparent text-base font-bold leading-7 outline-none placeholder:text-[#5B6158]/75"
                 />
               )}
             </div>
 
             {scanError ? (
-              <NeoWindow title="Scan Error" variant="not_vegan" size="sm">
-                <p className="text-sm font-black uppercase tracking-[0.04em]">
+              <NeoWindow title="Scan Error" variant="not_vegan" size="sm" boxed>
+                <p className="text-sm font-semibold">
                   {scanError}
                 </p>
               </NeoWindow>
@@ -404,7 +407,7 @@ export default function Home() {
 
             {mode === "scan" && rawText ? (
               <NeoWindow title="OCR Result" variant="maybe" size="sm">
-                <p className="whitespace-pre-wrap text-sm font-black uppercase tracking-[0.04em]">
+                <p className="whitespace-pre-wrap text-sm font-semibold">
                   {rawText}
                 </p>
               </NeoWindow>
@@ -426,7 +429,7 @@ export default function Home() {
 
             {isLoading ? (
               <NeoWindow title="Loading" variant="maybe" size="sm">
-                <p className="text-sm font-black uppercase tracking-[0.04em]">
+                <p className="text-sm font-semibold">
                   Routing to results...
                 </p>
               </NeoWindow>
@@ -449,36 +452,42 @@ export default function Home() {
   );
 }
 
-function IconButton({
+// One side of the Photo / Upload / Barcode toggle under the camera. The
+// highlighted side shows which source is in use; each still does its own
+// job when tapped.
+function SourceButton({
   label,
+  ariaLabel,
+  active,
   onClick,
-  background,
-  color,
   children
 }: {
   label: string;
+  ariaLabel: string;
+  active: boolean;
   onClick: () => void;
-  background: string;
-  color: string;
   children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={label}
-      title={label}
-      className="flex h-14 w-14 shrink-0 items-center justify-center border-[3px] border-[#000000] shadow-[4px_4px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_#000000]"
-      style={{ backgroundColor: background, color }}
+      aria-label={ariaLabel}
+      aria-pressed={active}
+      title={ariaLabel}
+      className={`flex min-h-[44px] min-w-0 items-center justify-center gap-1.5 rounded-full px-1 text-sm font-bold transition-colors ${
+        active ? "bg-[#214E34] text-[#FFF7E8]" : "text-[#20251F] hover:bg-[#FFF7E8]"
+      }`}
     >
       {children}
+      <span aria-hidden="true">{label}</span>
     </button>
   );
 }
 
 const iconProps = {
-  width: 28,
-  height: 28,
+  width: 18,
+  height: 18,
   viewBox: "0 0 24 24",
   fill: "none",
   stroke: "currentColor",

@@ -74,7 +74,7 @@ export default function BarcodeScanner({ onDetected, onCancel, busy }: Props) {
   return (
     <div className="flex w-full flex-col items-center gap-4">
       {cameraError ? (
-        <p className="text-sm font-black uppercase tracking-[0.04em]">
+        <p className="text-sm font-semibold">
           {cameraError}
         </p>
       ) : (
@@ -83,15 +83,15 @@ export default function BarcodeScanner({ onDetected, onCancel, busy }: Props) {
             ref={videoRef}
             muted
             playsInline
-            className="h-[220px] w-full rounded border-[3px] border-[#000000] bg-black object-cover"
+            className="h-[220px] w-full rounded border-2 border-[#20251F] bg-black object-cover"
           />
           {/* A guide box: lines the barcode up in the middle of the frame. */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[90px] w-[75%] -translate-x-1/2 -translate-y-1/2 border-[3px] border-dashed"
+            className="pointer-events-none absolute left-1/2 top-1/2 h-[90px] w-[75%] -translate-x-1/2 -translate-y-1/2 border-2 border-dashed rounded-xl"
             style={{ borderColor: colors.secondary }}
           />
-          <p className="mt-2 text-xs font-black uppercase tracking-[0.08em]">
+          <p className="mt-2 text-xs font-semibold">
             {busy
               ? "Looking it up..."
               : "Point at the barcode on the pack, or type its number below"}
@@ -116,12 +116,12 @@ export default function BarcodeScanner({ onDetected, onCancel, busy }: Props) {
           inputMode="numeric"
           autoComplete="off"
           placeholder="Barcode number"
-          className="min-h-[44px] w-full min-w-0 flex-1 border-[3px] border-[#000000] bg-white px-3 text-base font-black tracking-[0.04em] outline-none placeholder:text-[#474238]/75"
+          className="min-h-[44px] w-full min-w-0 flex-1 rounded-xl border-2 border-[#20251F] bg-white px-3 text-base font-bold outline-none placeholder:text-[#5B6158]/75 rounded-xl"
         />
         <button
           type="submit"
           disabled={!isBarcode(digits) || busy}
-          className="min-h-[44px] border-[3px] border-[#000000] px-4 text-xs font-black uppercase tracking-[0.08em] shadow-[4px_4px_0px_#000000] disabled:opacity-50"
+          className="min-h-[44px] border-2 border-[#20251F] px-4 text-xs font-bold shadow-[4px_4px_0px_#20251F] disabled:opacity-50 rounded-xl"
           style={{ backgroundColor: colors.secondary, color: colors.black }}
         >
           Look up
@@ -131,7 +131,7 @@ export default function BarcodeScanner({ onDetected, onCancel, busy }: Props) {
       <button
         type="button"
         onClick={onCancel}
-        className="min-h-[44px] px-2 text-xs font-black uppercase tracking-[0.08em] underline underline-offset-4"
+        className="min-h-[44px] px-2 text-sm font-bold underline underline-offset-4"
       >
         Back to camera
       </button>

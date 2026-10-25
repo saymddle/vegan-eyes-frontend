@@ -92,7 +92,7 @@ type Props = {
 };
 
 const chip =
-  "border-2 border-[#000000] px-2 py-1 text-xs font-black uppercase tracking-[0.04em] min-h-[44px]";
+  "min-h-[44px] rounded-full border-2 border-[#20251F] px-4 py-1 text-sm font-bold";
 
 function ChoiceChip({
   label,
@@ -110,8 +110,8 @@ function ChoiceChip({
       aria-pressed={active}
       className={chip}
       style={{
-        backgroundColor: active ? colors.primary : colors.white,
-        color: active ? colors.white : colors.black
+        backgroundColor: active ? colors.forest : colors.white,
+        color: active ? colors.cream : colors.ink
       }}
     >
       {label}
@@ -159,12 +159,13 @@ function SwapCard({
         active ? "relative z-20 scale-[1.02]" : ""
       }`}
       style={{
-        outline: active ? `4px solid ${colors.black}` : undefined
+        outline: active ? `4px solid ${colors.forest}` : undefined,
+        borderRadius: 18
       }}
     >
-      <NeoWindow title={swap.ingredient} variant={variant} size="sm">
+      <NeoWindow title={swap.ingredient} variant={variant} size="sm" boxed>
         <div className="flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-4 text-sm font-black uppercase tracking-[0.08em]">
+          <div className="flex items-start justify-between gap-4 text-sm font-bold">
             <p className="shrink-0">{statusLabel[swap.status]}</p>
             <p className="text-right">{summary}</p>
           </div>
@@ -196,7 +197,7 @@ function SwapCard({
           ) : null}
 
           {!onChoose && swap.alternative && !swap.kept ? (
-            <p className="text-xs font-black uppercase tracking-[0.04em]">
+            <p className="text-xs font-semibold">
               Or try: {swap.alternative}
             </p>
           ) : null}
@@ -257,29 +258,29 @@ export default function VeganRecipeView({
   return (
     <>
       <section
-        className="print-recipe border-[3px] border-[#000000] shadow-[8px_8px_0px_#000000]"
-        style={{ backgroundColor: colors.white, color: colors.black }}
+        className="print-recipe"
+        style={{ color: colors.ink }}
       >
-        <div className="border-b-[3px] border-[#000000] p-4">
-          <h1 className="text-2xl font-black uppercase leading-tight tracking-[-0.02em]">
+        <div className="border-b-2 border-[#20251F] pb-4">
+          <h1 className="text-[28px] leading-[1.1]">
             {title}
           </h1>
-          <p className="mt-2 text-xs font-bold uppercase tracking-[0.04em]">
+          <p className="mt-2 text-xs font-semibold">
             {verdict.body}
           </p>
           {subtitle ? (
-            <p className="mt-1 text-xs font-bold uppercase tracking-[0.04em] opacity-70">
+            <p className="mt-1 text-xs font-semibold opacity-70">
               {subtitle}
             </p>
           ) : null}
         </div>
 
-        <div className="p-4">
+        <div className="pt-4">
           <div
             className={
               hideVersionToggle
                 ? "hidden"
-                : "mb-4 inline-flex border-2 border-[#000000]"
+                : "mb-4 inline-flex overflow-hidden rounded-full border-2 border-[#20251F] bg-white p-[3px]"
             }
             role="group"
             aria-label="Show recipe version"
@@ -290,11 +291,11 @@ export default function VeganRecipeView({
                 type="button"
                 onClick={() => setShowOriginal(original)}
                 aria-pressed={showOriginal === original}
-                className="min-h-[44px] px-3 text-xs font-black uppercase tracking-[0.06em]"
+                className="min-h-[40px] rounded-full px-4 text-sm font-bold"
                 style={{
                   backgroundColor:
-                    showOriginal === original ? colors.black : colors.white,
-                  color: showOriginal === original ? colors.white : colors.black
+                    showOriginal === original ? colors.forest : "transparent",
+                  color: showOriginal === original ? colors.cream : colors.ink
                 }}
               >
                 {original ? "Original" : "Vegan"}
@@ -302,13 +303,13 @@ export default function VeganRecipeView({
             ))}
           </div>
 
-          <div className="flex flex-col gap-2 text-sm font-bold leading-6">
+          <div className="flex flex-col gap-2 text-[15px] font-medium leading-7">
             {recipe.lines.map((line, i) =>
               line.kind === "heading" &&
               (line.original === title || line.vegan === title) ? null : line.kind === "heading" ? (
                 <h2
                   key={i}
-                  className="mt-2 text-base font-black uppercase tracking-[0.06em] first:mt-0"
+                  className="mt-3 text-lg first:mt-0"
                 >
                   {showOriginal ? line.original : line.vegan}
                 </h2>
@@ -325,10 +326,11 @@ export default function VeganRecipeView({
                             key={j}
                             type="button"
                             onClick={() => focusSwap(part.swap as number)}
-                            className="inline px-1 text-left font-black underline decoration-2 underline-offset-2"
+                            className="inline rounded px-1 text-left font-semibold underline decoration-2 underline-offset-2"
                             style={{
-                              backgroundColor: colors.secondary,
-                              color: colors.black
+                              backgroundColor: "#DCEFB3",
+                              color: colors.ink,
+                              textDecorationColor: colors.forest
                             }}
                             title={`Swapped for ${recipe.swaps[part.swap]?.ingredient}. Tap to change.`}
                           >
@@ -340,7 +342,7 @@ export default function VeganRecipeView({
               )
             )}
           </div>
-          <p className="mt-6 hidden text-xs font-bold uppercase tracking-[0.04em] print:block">
+          <p className="mt-6 hidden text-xs font-semibold print:block">
             Made vegan with Vegan Eyes
           </p>
         </div>
@@ -350,11 +352,11 @@ export default function VeganRecipeView({
 
       {cards.length > 0 ? (
         <section data-tour="swaps" className="flex flex-col gap-3">
-          <h2 className="text-sm font-black uppercase tracking-[0.06em]">
+          <h2 className="text-2xl">
             Swaps
           </h2>
           {onChoose ? (
-            <p className="-mt-2 text-xs font-bold">
+            <p className="-mt-2 text-xs font-semibold">
               Pick a swap on any card, or keep the original. Tap a highlighted
               word in the recipe to jump to its card.
             </p>

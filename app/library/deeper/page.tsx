@@ -101,7 +101,7 @@ export default function DeeperLibraryPage() {
   }
 
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.base }}>
+    <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <Breadcrumb
           items={[
@@ -112,7 +112,7 @@ export default function DeeperLibraryPage() {
 
         <NeoWindow title="Deeper" variant="vegan" size="lg">
           <div className="flex flex-col gap-4">
-            <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em]">
+            <h1 className="text-[36px] leading-[1.05]">
               Saved ingredient insights.
             </h1>
             <NeoButton
@@ -126,7 +126,7 @@ export default function DeeperLibraryPage() {
 
         {isLoading ? (
           <NeoWindow title="Loading" variant="maybe" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+            <p className="text-sm font-semibold">
               Loading deeper insights...
             </p>
           </NeoWindow>
@@ -135,7 +135,7 @@ export default function DeeperLibraryPage() {
         {!isLoading && !error && visibleItems.length === 0 ? (
           <NeoWindow title="No saved insights yet" variant="maybe" size="md">
             <div className="flex flex-col gap-4">
-              <p className="text-sm font-black uppercase tracking-[0.04em]">
+              <p className="text-sm font-semibold">
                 Save ingredient insights from Results to build your learning
                 library.
               </p>
@@ -147,8 +147,8 @@ export default function DeeperLibraryPage() {
         ) : null}
 
         {!isLoading && error ? (
-          <NeoWindow title="Error" variant="not_vegan" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+          <NeoWindow title="Error" variant="not_vegan" size="sm" boxed>
+            <p className="text-sm font-semibold">
               {error}
             </p>
           </NeoWindow>
@@ -162,7 +162,7 @@ export default function DeeperLibraryPage() {
                 variant="maybe"
                 size="md"
               >
-                <div className="flex flex-col gap-3 text-sm font-bold uppercase leading-6 tracking-[0.04em]">
+                <div className="flex flex-col gap-3 text-sm font-bold leading-6">
                   <div className="flex items-center justify-between gap-4">
                     <p>{item.is_favorite ? "Favorite" : "Saved insight"}</p>
                     <NeoButton
@@ -174,13 +174,13 @@ export default function DeeperLibraryPage() {
                     </NeoButton>
                   </div>
                   <p>{item.reason}</p>
-                  <p className="mt-2 font-black">Substitutes:</p>
+                  <p className="mt-2 font-semibold">Substitutes:</p>
                   <ul className="flex list-disc flex-col gap-2 pl-5">
                     {item.substitutes.map((substitute) => (
                       <li key={`${item.id}-${substitute}`}>{substitute}</li>
                     ))}
                   </ul>
-                  <p className="text-xs font-black tracking-[0.08em]">
+                  <p className="text-xs font-semibold">
                     {new Date(item.created_at).toLocaleDateString()}
                   </p>
                 </div>

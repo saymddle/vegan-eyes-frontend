@@ -97,7 +97,7 @@ export default function RecipeDetailPage() {
   const title = saved?.title ?? "Recipe Detail";
 
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.base }}>
+    <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <Breadcrumb
           items={[
@@ -109,7 +109,7 @@ export default function RecipeDetailPage() {
 
         {isLoading ? (
           <NeoWindow title="Loading" variant="maybe" size="sm">
-            <p className="text-sm font-black uppercase tracking-[0.04em]">
+            <p className="text-sm font-semibold">
               Loading recipe...
             </p>
           </NeoWindow>
@@ -118,7 +118,7 @@ export default function RecipeDetailPage() {
         {!isLoading && !saved ? (
           <NeoWindow title="Recipe not found" variant="maybe" size="md">
             <div className="flex flex-col gap-4">
-              <p className="text-sm font-black uppercase tracking-[0.04em]">
+              <p className="text-sm font-semibold">
                 This saved recipe no longer exists.
               </p>
               <NeoButton href="/library/recipes" tone="base">
@@ -155,7 +155,7 @@ export default function RecipeDetailPage() {
                     </NeoButton>
                   </div>
                   <p
-                    className="min-h-5 text-center text-xs font-black uppercase"
+                    className="min-h-5 text-center text-xs font-semibold"
                     aria-live="polite"
                   >
                     {notice}
@@ -163,8 +163,8 @@ export default function RecipeDetailPage() {
                   <button
                     type="button"
                     onClick={handleDelete}
-                    className="min-h-[44px] self-center px-2 text-xs font-black uppercase tracking-[0.06em] underline underline-offset-4"
-                    style={{ color: "#7a4137" }}
+                    className="min-h-[44px] self-center px-2 text-sm font-bold underline underline-offset-4"
+                    style={{ color: "#20251F" }}
                   >
                     Delete recipe
                   </button>

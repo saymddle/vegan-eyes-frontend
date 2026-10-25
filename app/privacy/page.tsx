@@ -54,14 +54,14 @@ const sections: { title: string; points: string[] }[] = [
 
 export default function PrivacyPage() {
   return (
-    <main className="app-shell" style={{ backgroundColor: colors.base }}>
+    <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
         <BackButton />
         <NeoWindow title="Privacy" variant="vegan" size="lg">
-          <h1 className="text-4xl font-black uppercase leading-[0.95] tracking-[-0.04em]">
+          <h1 className="text-[34px] leading-[1.05]">
             Your data, plainly.
           </h1>
-          <p className="mt-3 text-xs font-bold uppercase tracking-[0.04em]">
+          <p className="mt-3 text-xs font-semibold">
             Updated {UPDATED}
           </p>
         </NeoWindow>
