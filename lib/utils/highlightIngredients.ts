@@ -1,3 +1,4 @@
+import { foldAccents, loosePattern, WORD_CHAR } from "@/lib/ingredients/matcher";
 import { colors } from "@/lib/theme/colors";
 
 type HighlightableIngredient = {
@@ -12,10 +13,6 @@ function escapeHtml(value: string) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export function getIngredientAnchorId(name: string) {
@@ -40,23 +37,25 @@ export function highlightIngredients(
           ? `background-color:${colors.secondary};color:${colors.ink};border-radius:4px;`
           : "";
     if (!style || !item.name.trim()) continue;
-    styles.set(item.name.toLowerCase(), { name: item.name, style });
+    styles.set(foldAccents(item.name.toLowerCase()), { name: item.name, style });
   }
 
   const escaped = escapeHtml(text);
   if (!styles.size) return escaped;
 
   // One pass, longest name first, so "Chicken Parmesan Cutlet" is one
-  // highlight and "Chicken" isn't highlighted again inside it.
-  const names = [...styles.values()]
-    .map((entry) => escapeRegExp(escapeHtml(entry.name)))
-    .sort((a, b) => b.length - a.length);
-  const regex = new RegExp(`\\b(${names.join("|")})\\b`, "gi");
+  // highlight and "Chicken" isn't highlighted again inside it. Accents don't
+  // matter: the "Pate" row highlights "pâté".
+  const names = [...styles.keys()]
+    .sort((a, b) => b.length - a.length)
+    .map((name) => loosePattern(escapeHtml(name)));
+  const regex = new RegExp(
+    `(?<![${WORD_CHAR}])(${names.join("|")})(?![${WORD_CHAR}])`,
+    "gi"
+  );
 
   return escaped.replace(regex, (found: string) => {
-    const entry = [...styles.values()].find(
-      (value) => escapeHtml(value.name).toLowerCase() === found.toLowerCase()
-    );
+    const entry = styles.get(foldAccents(found.toLowerCase()));
     if (!entry) return found;
     return `<span data-ingredient="${escapeHtml(entry.name)}" class="inline-block px-1 font-bold cursor-pointer underline transition-all duration-200 ease-out ${
       focusedIngredient === entry.name ? "ring-2 ring-[#20251F] scale-105" : ""

@@ -2720,7 +2720,15 @@
     {"name": "Panko Bread Crumbs", "vegan_status": "vegan", "lab_note": "Japanese-style breadcrumbs: usually just flour, yeast and salt", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
     {"name": "Egg Wash", "vegan_status": "non_vegan", "lab_note": "Beaten egg brushed on for colour or to make a coating stick", "swap_static": "Plant milk wash", "swap_functional": "Aquafaba", "is_complex": false, "aliases": null},
     {"name": "Chicken Cutlet", "vegan_status": "non_vegan", "lab_note": "A thin, flattened piece of chicken breast", "swap_static": "Seitan cutlet", "swap_functional": "Pressed tofu cutlet", "is_complex": false, "aliases": "Chicken cutlets"},
-    {"name": "Pizza Sauce", "vegan_status": "unclear", "lab_note": "Usually tomato, garlic and herbs, but a few brands add cheese", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null}
+    {"name": "Pizza Sauce", "vegan_status": "unclear", "lab_note": "Usually tomato, garlic and herbs, but a few brands add cheese", "swap_static": null, "swap_functional": null, "is_complex": false, "aliases": null},
+    {"name": "Ribs", "vegan_status": "non_vegan", "lab_note": "Pork or beef ribs", "swap_static": "Seitan ribs or BBQ jackfruit", "swap_functional": null, "is_complex": true, "aliases": null},
+    {"name": "Kidney", "vegan_status": "non_vegan", "lab_note": "Animal organ", "swap_static": "Mushrooms", "swap_functional": null, "is_complex": true, "aliases": null},
+    {"name": "Tongue", "vegan_status": "non_vegan", "lab_note": "Beef or pork tongue", "swap_static": "Seitan", "swap_functional": null, "is_complex": true, "aliases": null},
+    {"name": "Heart", "vegan_status": "non_vegan", "lab_note": "Animal organ", "swap_static": "Portobello mushrooms", "swap_functional": null, "is_complex": true, "aliases": null},
+    {"name": "Ground Chuck", "vegan_status": "non_vegan", "lab_note": "Ground beef from the shoulder", "swap_static": "Plant-based mince", "swap_functional": "Cooked lentils or chopped mushrooms", "is_complex": false, "aliases": null},
+    {"name": "Chuck Roast", "vegan_status": "non_vegan", "lab_note": "Beef shoulder roast", "swap_static": "Seitan roast", "swap_functional": "Jackfruit or portobello mushrooms", "is_complex": true, "aliases": null},
+    {"name": "Crème Anglaise", "vegan_status": "non_vegan", "lab_note": "Custard sauce made with egg yolks and milk", "swap_static": "Vegan vanilla custard sauce", "swap_functional": null, "is_complex": true, "aliases": null},
+    {"name": "Cultured Dairy", "vegan_status": "non_vegan", "lab_note": "Fermented milk", "swap_static": "Cultured plant milk", "swap_functional": null, "is_complex": true, "aliases": null}
   ],
   "synonyms": [
     {"alias": "Animal Fat", "ingredient_name": "Lard"},
@@ -2811,6 +2819,15 @@
     {"alias": "Suet", "ingredient_name": "Suet"},
     {"alias": "Vitamin B12", "ingredient_name": "Vitamin B12"},
     {"alias": "Whey Powder", "ingredient_name": "Whey"},
-    {"alias": "White Sugar", "ingredient_name": "White Sugar"}
+    {"alias": "White Sugar", "ingredient_name": "White Sugar"},
+    {"alias": "Parm", "ingredient_name": "Parmesan"},
+    {"alias": "Fillo", "ingredient_name": "Phyllo Dough"},
+    {"alias": "Fillo Dough", "ingredient_name": "Phyllo Dough"},
+    {"alias": "E472", "ingredient_name": "Mono-and Diglycerides"},
+    {"alias": "Ranch", "ingredient_name": "Ranch Dressing"},
+    {"alias": "Alfredo", "ingredient_name": "Alfredo Sauce"},
+    {"alias": "Swiss", "ingredient_name": "Swiss Cheese"},
+    {"alias": "Jell-O", "ingredient_name": "Jello"},
+    {"alias": "Gummy Worms", "ingredient_name": "Gummy Bear"}
   ]
 }

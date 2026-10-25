@@ -1,6 +1,9 @@
 import {
+  loosePattern,
   matchLine,
   normalize,
+  plantPhrases,
+  WORD_CHAR,
   splitIngredients,
   toStatus,
   type IngredientIndex,
@@ -184,10 +187,6 @@ function baseSwap(row: IngredientRow): RecipeSwap {
   };
 }
 
-function escapeRegex(text: string) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 // Cuts that only make sense with the meat: "2 chicken breasts" becomes
 // "2 seitan or soy chicken pieces", not "... pieces breasts".
 const CUTS =
@@ -199,10 +198,18 @@ const QUANTITY = `(?:(?:\\d+(?:\\.\\d+)?|\\d+/\\d+|[½¼¾⅓⅔])\\s+(?:${SIZE_
 // Dairy descriptions that make no sense on the swap: "whole milk" becomes
 // "unsweetened oat milk", not "whole unsweetened oat milk".
 const DAIRY_WORDS =
-  "(?:(?:whole|skim|skimmed|low[- ]fat|reduced[- ]fat|full[- ]fat|2%|grated|shredded|freshly grated)\\s+)?";
+  "(?:(?:whole|skim|skimmed|low[- ]fat|reduced[- ]fat|full[- ]fat|2%|grated|shredded|freshly grated|heavy|whipping|double|single|thickened)\\s+){0,2}";
+
+// The words as written in the recipe: any accents ("pâté"), any punctuation
+// between words, and "&" for "and" ("half & half").
+function wordsPattern(words: string[]) {
+  return words
+    .map((word) => (word === "and" ? "(?:and|&)" : loosePattern(word)))
+    .join(`[^${WORD_CHAR}]+`);
+}
 
 function phrasePattern(words: string[], withQuantity: boolean) {
-  const phrase = DAIRY_WORDS + words.map(escapeRegex).join("[^a-zA-Z0-9]+") + CUTS;
+  const phrase = DAIRY_WORDS + wordsPattern(words) + CUTS;
   return withQuantity ? QUANTITY + phrase : phrase;
 }
 
@@ -221,6 +228,9 @@ function replacementText(swap: RecipeSwap, matched: string) {
   }
   return (amount ? matched.slice(0, amount[0].length) : "") + swap.replacement;
 }
+
+// swap is KEEP for a plant-based phrase that stays as written.
+const KEEP = -1;
 
 type Phrase = {
   words: string[];
@@ -294,15 +304,24 @@ function replacePhrases(
   phrases: Phrase[],
   swaps: RecipeSwap[]
 ): LinePart[] {
-  const usable = phrases
-    .filter(({ swap }) => swaps[swap].replacement)
-    .sort((a, b) => b.words.join(" ").length - a.words.join(" ").length);
-
-  if (usable.length === 0) return [{ text: line }];
+  const swapping = phrases.filter(
+    ({ swap }) => swap !== KEEP && swaps[swap].replacement
+  );
+  if (swapping.length === 0) return [{ text: line }];
+  const usable = [
+    ...phrases.filter(({ swap }) => swap === KEEP),
+    ...swapping
+  ].sort((a, b) => b.words.join(" ").length - a.words.join(" ").length);
 
   // One capture group per phrase tells us which one matched.
   const pattern = new RegExp(
-    `(?<![a-zA-Z0-9])(?:${usable.map(({ words, swap }) => `(${phrasePattern(words, Boolean(ruleFor(swaps[swap])?.withQuantity))})`).join("|")})(?![a-zA-Z0-9])`,
+    `(?<![${WORD_CHAR}])(?:${usable
+      .map(({ words, swap }) =>
+        swap === KEEP
+          ? `(${wordsPattern(words)})`
+          : `(${phrasePattern(words, Boolean(ruleFor(swaps[swap])?.withQuantity))})`
+      )
+      .join("|")})(?![${WORD_CHAR}])`,
     "gi"
   );
   // Where the text starts, after any step number ("1. Cream the butter").
@@ -315,7 +334,8 @@ function replacePhrases(
   for (const found of line.matchAll(pattern)) {
     const start = found.index ?? 0;
     const phrase = usable[found.slice(1).findIndex((group) => group)];
-    if (!phrase || (phrase.skipAtStart && start === firstWord)) continue;
+    if (!phrase || phrase.swap === KEEP) continue;
+    if (phrase.skipAtStart && start === firstWord) continue;
     if (start > last) parts.push({ text: line.slice(last, start) });
     const capital =
       start === firstWord || (titleCase && /^[A-Z]/.test(found[0]));
@@ -337,6 +357,14 @@ function replacePhrases(
 
   if (last < line.length) parts.push({ text: line.slice(last) });
   return parts;
+}
+
+// Plant-based phrases on the line ("flax eggs", "vegan butter") that a swap
+// must not change.
+function keepPhrases(text: string, index: IngredientIndex): Phrase[] {
+  return splitIngredients(text).flatMap((segment) =>
+    plantPhrases(segment, index).map((words) => ({ words, swap: KEEP }))
+  );
 }
 
 function findFlagged(text: string, index: IngredientIndex) {
@@ -446,7 +474,11 @@ export function veganizeRecipe(
                   (part) => stepPhrases(normalize(part.row.name), part.words) ?? []
                 )
             );
-        const headingParts = replacePhrases(line, named, swaps);
+        const headingParts = replacePhrases(
+          line,
+          [...named, ...keepPhrases(line, index)],
+          swaps
+        );
         lines.push({
           kind: "heading",
           original: line,
@@ -482,7 +514,11 @@ export function veganizeRecipe(
           : [];
       });
 
-      const parts = replacePhrases(line, matches, swaps);
+      const parts = replacePhrases(
+        line,
+        [...matches, ...keepPhrases(line, index)],
+        swaps
+      );
       lines.push({
         kind,
         original: line,

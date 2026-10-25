@@ -4,19 +4,7 @@ import { splitList, statusOf } from "./helpers";
 
 // Known misses. Each one runs as an expected failure, so when a fix lands
 // the test turns red and says to move the item out of this list.
-const NOT_CAUGHT_YET = new Set([
-  // Left out on purpose: "ribs" would also hit "ribs of celery", and the
-  // organ words would hit "kidney beans" or "heart of palm".
-  "ribs",
-  "kidney",
-  "tongue",
-  "heart",
-  // Missing from the ingredient database.
-  "phyllo",
-  "pâté",
-  "e472",
-  "cultured dairy"
-]);
+const NOT_CAUGHT_YET = new Set<string>([]);
 
 const WRONGLY_FLAGGED_YET = new Set<string>([]);
 

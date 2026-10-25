@@ -13,6 +13,16 @@ describe("original recipe highlighting", () => {
     expect(html).toContain(">chicken</span>");
   });
 
+  it("ignores accents", () => {
+    const html = highlightIngredients("1 cup crème fraîche and pâté", [
+      { name: "Creme Fraiche", status: "not_vegan" },
+      { name: "Pate", status: "not_vegan" }
+    ]);
+    expect(html).toContain('data-ingredient="Creme Fraiche"');
+    expect(html).toContain(">crème fraîche</span>");
+    expect(html).toContain(">pâté</span>");
+  });
+
   it("escapes the recipe text", () => {
     expect(highlightIngredients("<b>milk</b>", [])).toBe(
       "&lt;b&gt;milk&lt;/b&gt;"
