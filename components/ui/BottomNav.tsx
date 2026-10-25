@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FEATURES } from "@/lib/features";
 
 const icons: Record<string, React.ReactNode> = {
   Scan: <path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M7 12h10" />,
@@ -23,7 +24,7 @@ const icons: Record<string, React.ReactNode> = {
 
 const navItems = [
   { href: "/", label: "Scan" },
-  { href: "/community", label: "Community" },
+  ...(FEATURES.community ? [{ href: "/community", label: "Community" }] : []),
   { href: "/my-scans", label: "Library" },
   { href: "/profile", label: "Profile" }
 ];
@@ -36,7 +37,9 @@ export default function BottomNav() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t-2 border-[#20251F] bg-white pb-[env(safe-area-inset-bottom)]">
-      <nav className="mx-auto grid max-w-[500px] grid-cols-4 px-2 pb-2 pt-2">
+      <nav
+        style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }}
+        className="mx-auto grid max-w-[500px] px-2 pb-2 pt-2">
         {navItems.map((item) => {
           const isActive =
             item.href === "/"
