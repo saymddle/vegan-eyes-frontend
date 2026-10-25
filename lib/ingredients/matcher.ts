@@ -1,4 +1,4 @@
-import type { BackendIngredient } from "@/lib/types/check";
+import type { BackendIngredient } from "../types/check";
 
 export type IngredientRow = {
   name: string;
