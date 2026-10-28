@@ -15,6 +15,7 @@ import { Text } from "@/components/Text";
 import { VeganVersion } from "@/components/VeganVersion";
 import { runCheck } from "@/lib/check";
 import { highlightSegments } from "@/lib/highlight";
+import { isAuthError, saveScan } from "@/lib/data";
 import { readScan } from "@/lib/scanStore";
 import { colors, radius } from "@/theme";
 
@@ -31,7 +32,8 @@ export default function ResultsScreen() {
   // A packaged product can't be cooked differently, so open on its label.
   const [tab, setTab] = useState<"vegan" | "original">(product ? "original" : "vegan");
   const [focused, setFocused] = useState<string | null>(null);
-  const [notice, setNotice] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const scrollRef = useRef<ScrollViewInstance | null>(null);
   const contentRef = useRef<HostInstance | null>(null);
   const jump = useJumpProvider(scrollRef, contentRef);
@@ -62,6 +64,21 @@ export default function ResultsScreen() {
     () => (result ? highlightSegments(scan.check, result.ingredients) : []),
     [result, scan.check]
   );
+
+  async function handleSaveResult() {
+    if (!result || !scan.check) return;
+    try {
+      await saveScan(scan.check, result);
+      setIsSaved(true);
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error) {
+      if (isAuthError(error)) {
+        router.push("/auth");
+        return;
+      }
+      setSaveError(error instanceof Error ? error.message : "Failed to save scan");
+    }
+  }
 
   function focusIngredient(name: string) {
     void Haptics.selectionAsync();
@@ -176,12 +193,13 @@ export default function ResultsScreen() {
             <View style={{ gap: 12, opacity: focused ? 0.6 : 1 }}>
               <NeoButton tone="base" onPress={() => router.back()}>Back to Scan</NeoButton>
               <NeoButton
-                disabled={!result}
-                onPress={() => setNotice("Saving scans comes with sign-in in the next build.")}
+                tone={isSaved ? "secondary" : "primary"}
+                disabled={!result || Boolean(error) || isSaved}
+                onPress={() => void handleSaveResult()}
               >
-                Save Scan
+                {isSaved ? "Saved" : "Save Scan"}
               </NeoButton>
-              {notice ? <Text variant="small" style={{ textAlign: "center" }}>{notice}</Text> : null}
+              {saveError ? <Text variant="small" style={{ textAlign: "center" }}>{saveError}</Text> : null}
             </View>
           </View>
         </ScrollView>

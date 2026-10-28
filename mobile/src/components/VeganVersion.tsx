@@ -8,6 +8,7 @@ import { rewriteRequest, applyRewrite } from "@shared/ingredients/rewrite";
 import { applySwapChoices, type SwapChoice, type SwapChoices } from "@shared/ingredients/swapChoices";
 import { veganizeRecipe, type VeganizedRecipe } from "@shared/ingredients/veganize";
 import { rewriteSteps } from "@/lib/api";
+import { isAuthError, reportSwap, saveRecipe, type SwapReportReason } from "@/lib/data";
 import { getIndex } from "@/lib/ingredientIndex";
 import { recipePrintHtml, veganRecipeText, veganRecipeTitle } from "@/lib/recipeText";
 import { readScan } from "@/lib/scanStore";
@@ -48,6 +49,8 @@ export function VeganVersion() {
   const [notice, setNotice] = useState("");
   const [rewrites, setRewrites] = useState<Record<string, (string | null)[]>>({});
   const [plainSteps, setPlainSteps] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const isProduct = scan.product !== null;
 
   useEffect(() => {
@@ -109,6 +112,44 @@ export function VeganVersion() {
       else delete next[swap];
       return next;
     });
+    // A changed recipe is a different recipe from the one saved.
+    setSavedId(null);
+  }
+
+  async function handleReport(swap: number, reason: SwapReportReason, note: string) {
+    if (!converted) return;
+    // Report what the converter suggested, not what the cook picked.
+    const suggested = converted.swaps[swap];
+    const line = converted.lines.find((recipeLine) => recipeLine.parts.some((part) => part.swap === swap));
+    try {
+      await reportSwap({
+        ingredient: suggested.ingredient,
+        suggestedSwap: suggested.replacement,
+        recipeLine: line?.original,
+        reason,
+        note
+      });
+    } catch (error) {
+      if (isAuthError(error)) router.push("/auth");
+      throw error;
+    }
+  }
+
+  async function handleSave() {
+    if (!recipe || savedId) return;
+    setIsSaving(true);
+    try {
+      const saved = await saveRecipe(veganRecipeTitle(recipe), scan.source, scan.recipe, recipe);
+      setSavedId(saved.id);
+    } catch (error) {
+      if (isAuthError(error)) {
+        router.push("/auth");
+        return;
+      }
+      flash("Couldn't save. Try again.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function handleCopy() {
@@ -162,7 +203,11 @@ export function VeganVersion() {
                 : "Steps adjusted for your swaps"}
           </Text>
           {hasRewrite ? (
-            <Pressable onPress={() => setPlainSteps((plain) => !plain)} style={styles.bannerLink} accessibilityRole="button">
+            <Pressable
+              onPress={() => {
+                setPlainSteps((plain) => !plain);
+                setSavedId(null);
+              }} style={styles.bannerLink} accessibilityRole="button">
               <Text variant="bold" style={{ fontSize: 12, textDecorationLine: "underline" }}>
                 {plainSteps ? "Show adjusted steps" : "Show plain steps"}
               </Text>
@@ -174,13 +219,21 @@ export function VeganVersion() {
       <VeganRecipeView
         recipe={recipe}
         heading={HEADING}
+        hideVersionToggle
         choices={choices}
         onChoose={handleChoose}
+        onReport={handleReport}
         actions={
           <View style={{ gap: 12 }}>
-            <NeoButton size="lg" onPress={() => flash("Saving comes with sign-in in the next build.")}>
-              Save Recipe
-            </NeoButton>
+            {savedId ? (
+              <NeoButton size="lg" tone="secondary" onPress={() => router.navigate(`/library/recipes/${savedId}`)}>
+                Saved. Open in Library
+              </NeoButton>
+            ) : (
+              <NeoButton size="lg" disabled={isSaving} onPress={() => void handleSave()}>
+                {isSaving ? "Saving..." : "Save Recipe"}
+              </NeoButton>
+            )}
             <View style={{ flexDirection: "row", gap: 12 }}>
               <NeoButton tone="base" size="sm" style={{ flex: 1 }} onPress={() => void handleCopy()}>Copy</NeoButton>
               <NeoButton tone="base" size="sm" style={{ flex: 1 }} onPress={() => void handleShare()}>Share</NeoButton>

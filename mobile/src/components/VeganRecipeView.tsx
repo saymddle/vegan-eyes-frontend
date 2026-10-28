@@ -4,11 +4,13 @@ import { Pressable, StyleSheet, View, type HostInstance } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import type { SwapChoice, SwapChoices } from "@shared/ingredients/swapChoices";
 import type { RecipeSwap, VeganizedRecipe } from "@shared/ingredients/veganize";
+import type { SwapReportReason } from "@/lib/data";
 import { recipeSummary, veganRecipeTitle } from "@/lib/recipeText";
 import { colors, radius } from "@/theme";
 import { DeeperDetails } from "./DeeperDetails";
 import { Expandable } from "./Expandable";
 import { NeoWindow } from "./NeoWindow";
+import { ReportSwapForm } from "./ReportSwapForm";
 import { useJump } from "./ScrollJump";
 import { Text } from "./Text";
 
@@ -17,8 +19,14 @@ type Props = {
   heading?: string;
   choices?: SwapChoices;
   onChoose?: (swap: number, choice: SwapChoice | undefined) => void;
+  // Shown under the summary, such as when a saved recipe was saved.
+  subtitle?: string;
+  // Hides the Vegan/Original switch when the screen has its own tabs.
+  hideVersionToggle?: boolean;
   // Buttons right under the recipe, above the swap cards.
   actions?: React.ReactNode;
+  // Sends a report that a swap is wrong. Without it there is no Report link.
+  onReport?: (swap: number, reason: SwapReportReason, note: string) => Promise<void>;
 };
 
 function ChoiceChip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
@@ -46,13 +54,15 @@ function SwapCard({
   index,
   active,
   choice,
-  onChoose
+  onChoose,
+  onReport
 }: {
   swap: RecipeSwap;
   index: number;
   active: boolean;
   choice?: SwapChoice;
   onChoose?: Props["onChoose"];
+  onReport?: Props["onReport"];
 }) {
   const { register } = useJump();
   const scale = useSharedValue(1);
@@ -102,6 +112,10 @@ function SwapCard({
             </View>
           ) : null}
 
+          {!onChoose && swap.alternative && !swap.kept ? (
+            <Text variant="small">Or try: {swap.alternative}</Text>
+          ) : null}
+
           <Expandable title="Deeper">
             <DeeperDetails
               name={swap.ingredient}
@@ -109,7 +123,11 @@ function SwapCard({
               reason={swap.about}
               isComplex={swap.complex}
               swap={swap.replacement}
-            />
+            >
+              {canChoose && onReport ? (
+                <ReportSwapForm ingredient={swap.ingredient} onSubmit={(reason, note) => onReport(index, reason, note)} />
+              ) : null}
+            </DeeperDetails>
           </Expandable>
         </View>
       </NeoWindow>
@@ -117,8 +135,18 @@ function SwapCard({
   );
 }
 
-export function VeganRecipeView({ recipe, heading, choices = {}, onChoose, actions }: Props) {
+export function VeganRecipeView({
+  recipe,
+  heading,
+  subtitle,
+  choices = {},
+  onChoose,
+  actions,
+  onReport,
+  hideVersionToggle = false
+}: Props) {
   const { jumpTo } = useJump();
+  const [showOriginal, setShowOriginal] = useState(false);
   const [activeSwap, setActiveSwap] = useState<number | null>(null);
   const title = heading ?? veganRecipeTitle(recipe);
 
@@ -142,14 +170,40 @@ export function VeganRecipeView({ recipe, heading, choices = {}, onChoose, actio
         <View style={styles.titleBlock}>
           <Text variant="display">{title}</Text>
           <Text variant="small" style={{ marginTop: 8 }}>{recipeSummary(recipe)}</Text>
+          {subtitle ? <Text variant="small" style={{ marginTop: 4, opacity: 0.7 }}>{subtitle}</Text> : null}
         </View>
         <View style={{ paddingTop: 16, gap: 8 }}>
+          {hideVersionToggle ? null : (
+            <View style={styles.toggle} accessibilityLabel="Show recipe version">
+              {[false, true].map((original) => {
+                const active = showOriginal === original;
+                return (
+                  <Pressable
+                    key={String(original)}
+                    onPress={() => {
+                      void Haptics.selectionAsync();
+                      setShowOriginal(original);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    style={[styles.toggleSide, active && { backgroundColor: colors.forest }]}
+                  >
+                    <Text variant="bold" style={{ fontSize: 14, color: active ? colors.cream : colors.ink }}>
+                      {original ? "Original" : "Vegan"}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
           {recipe.lines.map((line, i) =>
             line.kind === "heading" && (line.original === title || line.vegan === title) ? null : line.kind ===
               "heading" ? (
               <Text key={i} variant="display" style={{ fontSize: 18, lineHeight: 22, marginTop: i === 0 ? 0 : 12 }}>
-                {line.vegan}
+                {showOriginal ? line.original : line.vegan}
               </Text>
+            ) : showOriginal ? (
+              <Text key={i} style={{ lineHeight: 28, marginTop: line.kind === "step" ? 4 : 0 }}>{line.original}</Text>
             ) : (
               <Text key={i} style={{ lineHeight: 28, marginTop: line.kind === "step" ? 4 : 0 }}>
                 {line.parts.map((part, j) =>
@@ -193,6 +247,7 @@ export function VeganRecipeView({ recipe, heading, choices = {}, onChoose, actio
                 active={activeSwap === index}
                 choice={choices[index]}
                 onChoose={onChoose}
+                onReport={onReport}
               />
             ))}
           </View>
@@ -222,6 +277,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     justifyContent: "center"
   },
+  toggle: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: radius.pill,
+    backgroundColor: colors.white,
+    padding: 3,
+    marginBottom: 8
+  },
+  toggleSide: { minHeight: 40, paddingHorizontal: 16, borderRadius: radius.pill, justifyContent: "center" },
   cardWrap: { borderRadius: radius.lg + 4 },
   cardActive: { outlineWidth: 4, outlineColor: colors.forest, outlineStyle: "solid", outlineOffset: 2 }
 });

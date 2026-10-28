@@ -40,6 +40,9 @@ export default function RootLayout() {
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream } }}
       >
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="auth" options={{ presentation: "modal" }} />
+        <Stack.Screen name="privacy" />
+        <Stack.Screen name="goodbye" options={{ gestureEnabled: false }} />
       </Stack>
     </>
   );

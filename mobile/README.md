@@ -25,9 +25,11 @@ secret keys. Set `EXPO_PUBLIC_API_BASE` to point at a different server.
 ## Layout
 
 - `src/app/` screens (Expo Router): the Scan tab holds Scan and its Results;
-  Library and Profile are tabs.
+  the Library tab holds saved scans, Recent, Recipes and Deeper; the Profile
+  tab holds Profile and Delete account. Sign-in opens over any screen.
 - `src/components/` buttons, cards and the recipe view.
-- `src/lib/` the scan store, server calls, the on-phone database and helpers.
+- `src/lib/` the scan store, server calls, saving to Supabase (`data.ts`), the
+  on-phone database and helpers.
 - `src/theme.ts` colors, fonts and sizes.
 
 ## Checks
