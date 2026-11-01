@@ -37,3 +37,46 @@ secret keys. Set `EXPO_PUBLIC_API_BASE` to point at a different server.
 ```bash
 npx tsc --noEmit
 ```
+
+## Publishing to the App Store
+
+You need an Apple Developer account ($99 a year,
+https://developer.apple.com/programs/enroll/). Apple can take a day or two to
+approve it.
+
+Then, on your computer, in this folder:
+
+```bash
+npm install -g eas-cli
+eas login                 # the same Expo account you use for Expo Go
+eas init                  # links this folder to a project on expo.dev (commit the app.json change it makes)
+eas build --platform ios --profile production
+```
+
+The build runs on Expo's servers. The first time, it asks you to sign in with
+your Apple ID and makes the signing certificates for you. When it finishes:
+
+```bash
+eas submit --platform ios --latest
+```
+
+That uploads the build to App Store Connect. It shows up in TestFlight first,
+so you can install it on your own iPhone before anyone else sees it.
+
+To release it, open https://appstoreconnect.apple.com, pick Vegan Eyes and fill
+in the listing:
+
+- Privacy policy URL: https://vegan-eyes-frontend.vercel.app/privacy
+- Support URL: https://vegan-eyes-frontend.vercel.app/support
+- Screenshots from a 6.9" iPhone (take them in the iOS Simulator or on a Pro Max).
+- App Privacy: "Data linked to you" = email address and the content you save
+  (recipes, scans); used for app functionality only; no tracking.
+- Sign-in details for the reviewer: a test account email and password.
+
+Then press Submit for Review. Review usually takes a day or two.
+
+The bundle ID is `app.veganeyes` (in `app.json`). If Apple says it's taken,
+change it there before the first build; it can't change after release.
+
+Android later works the same way with `--platform android` and a Google Play
+developer account ($25 once).

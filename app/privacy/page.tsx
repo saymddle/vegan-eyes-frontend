@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import BackButton from "@/components/ui/BackButton";
 import NeoWindow from "@/components/ui/NeoWindow";
-import { colors } from "@/lib/theme/colors";
+import SiteLinks from "@/components/ui/SiteLinks";
 
 export const metadata: Metadata = {
   title: "Privacy | Vegan Eyes"
 };
 
-const UPDATED = "October 19, 2026";
+const UPDATED = "November 1, 2026";
 
 const sections: { title: string; points: string[] }[] = [
   {
@@ -22,8 +21,9 @@ const sections: { title: string; points: string[] }[] = [
   {
     title: "Photos and pasted recipes",
     points: [
-      "When you scan a photo, it is sent to Mistral, an AI text-reading service, which returns the words in it. We don't store the photo.",
-      "The text from a photo, or a recipe you paste, is checked against our ingredient list on our server and is only saved if you tap Save.",
+      "When you scan a photo or PDF, it is sent to Mistral, an AI text-reading service, which returns the words in it. We don't store the photo.",
+      "Recipes are checked against our ingredient list on your phone, and are only saved if you tap Save.",
+      "When you scan a barcode, the number is looked up in Open Food Facts, a free public food database.",
       "Mistral handles photos under its own privacy policy."
     ]
   },
@@ -31,23 +31,23 @@ const sections: { title: string; points: string[] }[] = [
     title: "Where it's stored",
     points: [
       "Saved data lives in our Supabase database. Each account can only read its own scans, recipes and notes.",
-      "The app is hosted on Vercel, which keeps standard server logs such as IP addresses for a short time.",
-      "On your device, the scan you're working on is kept in the browser tab and cleared when you close it. Your sign-in is remembered by your browser until you sign out."
+      "Photo reading and barcode lookups go through our server on Vercel, which keeps standard server logs such as IP addresses for a short time.",
+      "On your phone, the scan you're working on is kept only while the app is open. Your sign-in is remembered by the app until you sign out."
     ]
   },
   {
     title: "What we don't do",
     points: [
-      "No ads, no tracking cookies and no analytics tools.",
+      "No ads, no tracking and no analytics tools.",
       "We don't sell or share your data with anyone beyond the services named here."
     ]
   },
   {
     title: "Deleting your data",
     points: [
-      "You can delete any saved recipe or scan from your Library at any time.",
+      "You can delete any saved recipe from your Library at any time.",
       "You can delete your whole account from your Profile. That removes your account and everything saved with it, straight away.",
-      "Signing out removes your sign-in from this device."
+      "Signing out removes your sign-in from this phone."
     ]
   }
 ];
@@ -56,7 +56,6 @@ export default function PrivacyPage() {
   return (
     <main className="app-shell">
       <div className="mx-auto flex max-w-[500px] flex-col gap-6">
-        <BackButton />
         <NeoWindow title="Privacy" variant="vegan" size="lg">
           <h1 className="text-[34px] leading-[1.05]">
             Your data, plainly.
@@ -75,6 +74,7 @@ export default function PrivacyPage() {
             </ul>
           </NeoWindow>
         ))}
+        <SiteLinks />
       </div>
     </main>
   );

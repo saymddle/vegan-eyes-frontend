@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Lilita_One } from "next/font/google";
 import AppHeader from "@/components/ui/AppHeader";
-import BottomNav from "@/components/ui/BottomNav";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,7 +18,7 @@ const lilita = Lilita_One({
 
 export const metadata: Metadata = {
   title: "Vegan Eyes",
-  description: "Scan ingredients and spot non-vegan additives fast."
+  description: "Vegan Eyes is a phone app that turns any recipe vegan."
 };
 
 export default function RootLayout({
@@ -32,7 +31,6 @@ export default function RootLayout({
       <body>
         <AppHeader />
         {children}
-        <BottomNav />
       </body>
     </html>
   );
