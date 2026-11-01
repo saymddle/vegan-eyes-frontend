@@ -3,8 +3,8 @@ import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
-import { useIsFocused, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { Redirect, useIsFocused, useRouter } from "expo-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +14,9 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
-  View
+  View,
+  type HostInstance,
+  type ScrollViewInstance
 } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,13 +34,25 @@ import { NeoButton } from "@/components/NeoButton";
 import { NeoSwitch } from "@/components/NeoSwitch";
 import { NeoWindow } from "@/components/NeoWindow";
 import { Text } from "@/components/Text";
+import { Tour, TourAction, TourTarget, type TourStep } from "@/components/Tour";
 import { lookupBarcode, scanText } from "@/lib/api";
+import { INTRO_SEEN, SCAN_TOUR_SEEN, hasFlag } from "@/lib/onboarding";
 import { storeProductScan, storeScanInput } from "@/lib/scanStore";
 import { pdfDataUrl, photoDataUrl } from "@/lib/upload";
 import { colors, fonts, radius } from "@/theme";
 
 // The scan heading alternates between these, 5 seconds each.
 const messages = ["SCAN AN INGREDIENT", "CONVERT A RECIPE"];
+
+// Filled in by "Try a sample recipe" in the first-scan walkthrough.
+const SAMPLE_RECIPE = `Fluffy Pancakes
+1 cup flour
+1 tbsp sugar
+2 tsp baking powder
+1 cup milk
+1 egg
+2 tbsp melted butter
+Honey, to serve`;
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -58,6 +72,40 @@ export default function ScanScreen() {
   const [loading, setLoading] = useState(false);
   const [scanError, setScanError] = useState("");
   const [showHelp, setShowHelp] = useState(false);
+  // The first time the app opens, the intro comes first.
+  const introSeen = focused ? hasFlag(INTRO_SEEN) : true;
+  const scrollRef = useRef<ScrollViewInstance | null>(null);
+  const contentRef = useRef<HostInstance | null>(null);
+
+  const tourSteps = useMemo<TourStep[]>(
+    () => [
+      {
+        target: "mode-switch",
+        title: "Scan or type",
+        body: "Scan takes a photo of a recipe or food label. Type lets you paste a recipe from a website."
+      },
+      {
+        target: "scan-input",
+        title: "Add your recipe",
+        body: "Tap Photo to take a picture, Upload to pick a photo or PDF, or Barcode to look up a packaged product. Or switch to Type and paste. No recipe handy?",
+        extra: (
+          <TourAction
+            label="Try a sample recipe"
+            onPress={() => {
+              setMode("type");
+              setTyped(SAMPLE_RECIPE);
+            }}
+          />
+        )
+      },
+      {
+        target: "analyze",
+        title: "Tap Analyze",
+        body: "Vegan Eyes finds every animal ingredient and gives you a plant-based version of the recipe."
+      }
+    ],
+    []
+  );
 
   // Rotating heading with a short fade between messages.
   const [index, setIndex] = useState(0);
@@ -203,7 +251,7 @@ export default function ScanScreen() {
   }
 
   const hasPicture = Boolean(image || pdf);
-  const cameraOn = focused && mode === "scan" && !hasPicture && permission?.granted;
+  const cameraOn = focused && introSeen && mode === "scan" && !hasPicture && permission?.granted;
 
   function cameraArea() {
     if (pdf) {
@@ -252,10 +300,14 @@ export default function ScanScreen() {
     );
   }
 
+  if (!introSeen) return <Redirect href="/welcome" />;
+
   return (
     <SafeAreaView edges={["top"]} style={styles.safe}>
+      <Tour steps={tourSteps} storageKey={SCAN_TOUR_SEEN} enabled={focused} scrollRef={scrollRef} contentRef={contentRef}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 40 }}>
+        <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 40 }}>
+          <View ref={contentRef} collapsable={false}>
           <AppHeader />
           <View style={styles.page}>
             <View style={styles.helpWrap}>
@@ -270,16 +322,26 @@ export default function ScanScreen() {
                 <Text variant="bold" style={{ color: showHelp ? colors.white : colors.ink }}>?</Text>
               </Pressable>
             </View>
-            {showHelp ? <HelpCard onClose={() => setShowHelp(false)} /> : null}
+            {showHelp ? (
+              <HelpCard
+                onClose={() => setShowHelp(false)}
+                onReplay={() => {
+                  setShowHelp(false);
+                  router.push("/welcome");
+                }}
+              />
+            ) : null}
 
             <View style={styles.headRow}>
               <View style={styles.headingBox}>
                 <Animated.Text style={[styles.heading, headingStyle]}>{messages[index]}</Animated.Text>
               </View>
-              <NeoSwitch value={mode} onChange={setMode} />
+              <TourTarget name="mode-switch">
+                <NeoSwitch value={mode} onChange={setMode} />
+              </TourTarget>
             </View>
 
-            <View style={styles.inputBox}>
+            <TourTarget name="scan-input" style={styles.inputBox}>
               {mode === "scan" ? (
                 <View style={{ gap: 16, alignItems: "center" }}>
                   {cameraArea()}
@@ -352,7 +414,7 @@ export default function ScanScreen() {
                   style={styles.textarea}
                 />
               )}
-            </View>
+            </TourTarget>
 
             {scanError ? (
               <NeoWindow title="Scan Error" variant="not_vegan" size="sm" boxed>
@@ -360,6 +422,7 @@ export default function ScanScreen() {
               </NeoWindow>
             ) : null}
 
+            <TourTarget name="analyze">
             <NeoButton tone="secondary" onPress={() => void handleAnalyze()} disabled={loading}>
               {loading ? (
                 <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
@@ -370,9 +433,12 @@ export default function ScanScreen() {
                 "Analyze"
               )}
             </NeoButton>
+            </TourTarget>
+          </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      </Tour>
     </SafeAreaView>
   );
 }

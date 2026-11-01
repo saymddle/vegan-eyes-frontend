@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Animated, { FadeInDown, FadeOut } from "react-native-reanimated";
 import { colors, radius } from "@/theme";
 import { NeoButton } from "./NeoButton";
@@ -11,7 +11,7 @@ const steps = [
 ];
 
 // How the app works in three steps, opened from the "?" on Scan.
-export function HelpCard({ onClose }: { onClose: () => void }) {
+export function HelpCard({ onClose, onReplay }: { onClose: () => void; onReplay: () => void }) {
   return (
     <Animated.View entering={FadeInDown.duration(220)} exiting={FadeOut.duration(150)} style={styles.card}>
       <Text variant="display" style={{ fontSize: 22, lineHeight: 26 }}>Veganize your recipe</Text>
@@ -25,8 +25,11 @@ export function HelpCard({ onClose }: { onClose: () => void }) {
           </View>
         ))}
       </View>
-      <View style={{ marginTop: 16, alignSelf: "flex-start" }}>
+      <View style={styles.actions}>
         <NeoButton size="sm" onPress={onClose} style={{ minWidth: 96 }}>Close</NeoButton>
+        <Pressable onPress={onReplay} accessibilityRole="link" style={styles.replay}>
+          <Text variant="bold" style={{ fontSize: 14, textDecorationLine: "underline" }}>Replay the intro</Text>
+        </Pressable>
       </View>
     </Animated.View>
   );
@@ -41,6 +44,8 @@ const styles = StyleSheet.create({
     padding: 16
   },
   row: { flexDirection: "row", gap: 12 },
+  actions: { marginTop: 16, flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 16 },
+  replay: { minHeight: 44, justifyContent: "center" },
   num: {
     width: 24,
     height: 24,

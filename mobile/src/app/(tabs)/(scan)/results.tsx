@@ -1,5 +1,5 @@
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
+import { useIsFocused, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View, type HostInstance, type ScrollViewInstance } from "react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
@@ -12,10 +12,12 @@ import { NeoWindow } from "@/components/NeoWindow";
 import { ProductCard } from "@/components/ProductCard";
 import { JumpProvider, useJumpProvider } from "@/components/ScrollJump";
 import { Text } from "@/components/Text";
+import { Tour, TourTarget, type TourStep } from "@/components/Tour";
 import { VeganVersion } from "@/components/VeganVersion";
 import { runCheck } from "@/lib/check";
 import { highlightSegments } from "@/lib/highlight";
 import { isAuthError, saveScan } from "@/lib/data";
+import { RESULTS_TOUR_SEEN } from "@/lib/onboarding";
 import { readScan } from "@/lib/scanStore";
 import { colors, radius } from "@/theme";
 
@@ -25,8 +27,33 @@ const statusCopy: Record<UIStatus, { title: string; body: string }> = {
   maybe: { title: "Maybe", body: "This result contains ambiguous ingredients that need source checks." }
 };
 
+// The second half of the first-scan walkthrough.
+const tourSteps: TourStep[] = [
+  {
+    target: "verdict",
+    title: "Your verdict",
+    body: "This tells you at a glance whether the recipe was already vegan."
+  },
+  {
+    target: "version-tabs",
+    title: "Original or vegan",
+    body: "Original shows the animal ingredients in red. Vegan shows your converted recipe."
+  },
+  {
+    target: "swaps",
+    title: "Change a swap",
+    body: "Each card shows a swap. Pick another option, or keep the original ingredient."
+  },
+  {
+    target: "save",
+    title: "Save and share",
+    body: "Save the recipe to your Library (you'll need to sign in), or copy, share or print it."
+  }
+];
+
 export default function ResultsScreen() {
   const router = useRouter();
+  const screenFocused = useIsFocused();
   const scan = readScan();
   const product = scan.product;
   // A packaged product can't be cooked differently, so open on its label.
@@ -90,6 +117,14 @@ export default function ResultsScreen() {
   return (
     <SafeAreaView edges={["top"]} style={styles.safe}>
       <JumpProvider value={jump}>
+      <Tour
+        steps={tourSteps}
+        storageKey={RESULTS_TOUR_SEEN}
+        waitFor="save"
+        enabled={screenFocused}
+        scrollRef={scrollRef}
+        contentRef={contentRef}
+      >
         <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 40 }}>
           <View ref={contentRef} style={styles.page}>
             <Pressable onPress={() => router.back()} style={styles.back} accessibilityRole="button">
@@ -99,6 +134,7 @@ export default function ResultsScreen() {
 
             {product ? <ProductCard product={product} /> : null}
 
+            <TourTarget name="verdict">
             <Animated.View entering={FadeInDown.duration(300).springify().damping(16)} style={{ opacity: focused ? 0.6 : 1 }}>
               <NeoWindow title="Scan Result" variant={mainVariant} size="lg" boxed>
                 <View style={{ gap: 16 }}>
@@ -107,7 +143,9 @@ export default function ResultsScreen() {
                 </View>
               </NeoWindow>
             </Animated.View>
+            </TourTarget>
 
+            <TourTarget name="version-tabs">
             <View style={styles.tabs} accessibilityRole="tablist">
               {(
                 [
@@ -134,6 +172,7 @@ export default function ResultsScreen() {
                 );
               })}
             </View>
+            </TourTarget>
 
             {/* Stays mounted so picks survive switching tabs. */}
             <View style={tab === "vegan" ? undefined : styles.hidden}>
@@ -203,6 +242,7 @@ export default function ResultsScreen() {
             </View>
           </View>
         </ScrollView>
+      </Tour>
       </JumpProvider>
     </SafeAreaView>
   );

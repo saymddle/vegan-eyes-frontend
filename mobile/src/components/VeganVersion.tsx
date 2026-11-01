@@ -15,6 +15,7 @@ import { readScan } from "@/lib/scanStore";
 import { colors, radius } from "@/theme";
 import { NeoButton } from "./NeoButton";
 import { Text } from "./Text";
+import { TourTarget } from "./Tour";
 import { VeganRecipeView } from "./VeganRecipeView";
 
 const HEADING = "Your substitutions";
@@ -224,7 +225,7 @@ export function VeganVersion() {
         onChoose={handleChoose}
         onReport={handleReport}
         actions={
-          <View style={{ gap: 12 }}>
+          <TourTarget name="save" style={{ gap: 12 }}>
             {savedId ? (
               <NeoButton size="lg" tone="secondary" onPress={() => router.navigate(`/library/recipes/${savedId}`)}>
                 Saved. Open in Library
@@ -245,7 +246,7 @@ export function VeganVersion() {
             <Pressable onPress={() => router.back()} style={styles.scanAnother} accessibilityRole="button">
               <Text variant="bold" style={{ fontSize: 12, textDecorationLine: "underline" }}>Scan another</Text>
             </Pressable>
-          </View>
+          </TourTarget>
         }
       />
     </Animated.View>

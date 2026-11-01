@@ -13,6 +13,7 @@ import { NeoWindow } from "./NeoWindow";
 import { ReportSwapForm } from "./ReportSwapForm";
 import { useJump } from "./ScrollJump";
 import { Text } from "./Text";
+import { TourTarget } from "./Tour";
 
 type Props = {
   recipe: VeganizedRecipe;
@@ -231,7 +232,7 @@ export function VeganRecipeView({
       {actions}
 
       {cards.length > 0 ? (
-        <View style={{ gap: 12 }}>
+        <TourTarget name="swaps" style={{ gap: 12 }}>
           <Text variant="display" style={{ fontSize: 24, lineHeight: 28 }}>Swaps</Text>
           {onChoose ? (
             <Text variant="small" style={{ marginTop: -4 }}>
@@ -251,7 +252,7 @@ export function VeganRecipeView({
               />
             ))}
           </View>
-        </View>
+        </TourTarget>
       ) : null}
     </View>
   );
